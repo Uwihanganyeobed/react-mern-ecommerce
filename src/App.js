@@ -1,25 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
-
-function App() {
+import React from 'react';
+import Navbar from './comps/Navbar';
+import Example from './comps/Example';
+import Featured from './comps/Featured';
+import Categories from './comps/Categories';
+import Footer from './comps/Footer';
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='flex flex-col'>
+      <Navbar />
+      {/* Add other components or content below the navbar */}
+      <div className="flex flex-col">
+        <Example />
+        <Featured />
+        <Categories />
+        <Footer />
+      </div>
     </div>
   );
 }
-
-export default App;
