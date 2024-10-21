@@ -62,7 +62,7 @@ export default function Navbar() {
             </div>
 
             {/* Cart Icon */}
-            <div className="mt-4 flex items-center justify-between">
+            <Link className="mt-4 flex items-center justify-between"to='/cart'>
               <span className="text-sm font-medium text-gray-700">
                 Cart (3)
               </span>{" "}
@@ -75,7 +75,7 @@ export default function Navbar() {
                 </span>{" "}
                 {/* Change '3' to your dynamic cart count */}
               </div>
-            </div>
+            </Link>
           </Dialog.Panel>
         </div>
       </Dialog>
@@ -93,9 +93,9 @@ export default function Navbar() {
 
           {/* Logo */}
           <div className="flex items-center mr-auto mt-10">
-            <a href="#2">
+            <Link to="/">
               <img src="/assets/logo.png" alt="Logo" width={180} />
-            </a>
+            </Link>
           </div>
 
           {/* Left-Side Links (Desktop Only) */}
@@ -129,25 +129,18 @@ export default function Navbar() {
 
           {/* Right-side Controls (Desktop Only) */}
           <div className="hidden lg:flex items-center space-x-4 ml-auto">
-            <a
-              href="#4"
+            <Link
+              to="/login"
               className="text-lg font-medium text-gray-700 hover:text-gray-800"
             >
-              Sign in
-            </a>
+              Account
+            </Link>
             <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
-            <a
-              href="#5"
-              className="text-lg font-medium text-gray-700 hover:text-gray-800"
-            >
-              Create{" "}
-            </a>
-            <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
-
+            
             {/* Currency (CAD) with Flag */}
             {/* Currency Selector */}
             <div className="inline-flex items-center">
-              <select className="border border-gray-300 rounded-md text-sm font-medium text-gray-700 focus:border-indigo-500 focus:ring-indigo-500">
+              <select className="border border-gray-300 rounded-md text-sm font-medium text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2">
                 <option value="CAD" className="flex items-center">
                   <img
                     src="https://flagcdn.com/ca.svg"
@@ -192,10 +185,10 @@ export default function Navbar() {
             </div>
 
             {/* Cart Icon (Desktop Only) */}
-            <div className="flex items-center ml-auto cursor-pointer">
+            <Link className="flex items-center ml-auto cursor-pointer" to='/cart'>
               <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
               <span className="ml-2 text-sm font-medium text-gray700">0</span>
-            </div>
+            </Link>
           </div>
         </div>
       </nav>

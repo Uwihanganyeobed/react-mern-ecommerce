@@ -1,10 +1,14 @@
 import React from "react";
-import Navbar from "./comps/Navbar";
-import Headings from "./comps/Headings";
-import Featured from "./comps/Featured";
-import Categories from "./comps/Categories";
-import Footer from "./comps/Footer";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Headings from "./components/Headings";
+import Featured from "./components/Featured";
+import Categories from "./components/Categories";
+import Cart from "./components/Cart";
+import Checkout from "./components/Checkout";
+import Form from "./components/Form";
+import MonoProduct from "./components/MonoProduct";
 
 export default function App() {
   return (
@@ -15,6 +19,11 @@ export default function App() {
         <div className="flex flex-col flex-grow">
           <Routes>
             <Route path="/" element={<Main />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/login" element={<Form type="login" />} />
+            <Route path="/register" element={<Form type="register" />} />
+            <Route path="/mono" element={<MonoProduct  />} />
           </Routes>
         </div>
         <Footer />
