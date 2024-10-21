@@ -9,6 +9,7 @@ import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
 import Form from "./components/Form";
 import MonoProduct from "./components/MonoProduct";
+import Reviews from "./components/Reviews";
 
 export default function App() {
   return (
@@ -24,6 +25,8 @@ export default function App() {
             <Route path="/login" element={<Form type="login" />} />
             <Route path="/register" element={<Form type="register" />} />
             <Route path="/mono" element={<MonoProduct  />} />
+            <Route path="/review" element={<Reviews  />} />
+
           </Routes>
         </div>
         <Footer />

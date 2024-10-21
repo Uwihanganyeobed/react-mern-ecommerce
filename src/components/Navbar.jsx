@@ -10,7 +10,6 @@ import { Link } from "react-router-dom";
 import { navigation } from "../utils/items";
 
 export default function Navbar() {
-  
   const [open, setOpen] = useState(false);
 
   return (
@@ -50,7 +49,7 @@ export default function Navbar() {
             <div className="mt-4 flex items-center">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search for a Product"
                 className="flex-grow border border-gray-300 rounded-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
               <button
@@ -62,7 +61,7 @@ export default function Navbar() {
             </div>
 
             {/* Cart Icon */}
-            <Link className="mt-4 flex items-center justify-between"to='/cart'>
+            <Link className="mt-4 flex items-center justify-between" to="/cart">
               <span className="text-sm font-medium text-gray-700">
                 Cart (3)
               </span>{" "}
@@ -109,22 +108,23 @@ export default function Navbar() {
                 {category.name}
               </Link>
             ))}
-            
           </div>
 
           {/* Search Bar (Desktop Only) */}
-          <div className="hidden lg:flex lg:flex-grow lg:max-w-lg lg:justify-center mx-auto px-4">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full border border-gray-300 rounded-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-xs"
-            />
-            <button
-              type="submit"
-              className="ml-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-            >
-              <MagnifyingGlassIcon className="h-5 w-5" />
-            </button>
+          <div className="hidden lg:flex lg:flex-grow lg:max-w-lg lg:justify-center mx-auto">
+            <div className="flex w-full">
+              <input
+                type="text"
+                placeholder="Search for a Product"
+                className="w-full border border-gray-300 rounded-l-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-lg"
+              />
+              <button
+                type="submit"
+                className="px-4 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700"
+              >
+                <MagnifyingGlassIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
           {/* Right-side Controls (Desktop Only) */}
@@ -136,7 +136,7 @@ export default function Navbar() {
               Account
             </Link>
             <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
-            
+
             {/* Currency (CAD) with Flag */}
             {/* Currency Selector */}
             <div className="inline-flex items-center">
@@ -185,7 +185,10 @@ export default function Navbar() {
             </div>
 
             {/* Cart Icon (Desktop Only) */}
-            <Link className="flex items-center ml-auto cursor-pointer" to='/cart'>
+            <Link
+              className="flex items-center ml-auto cursor-pointer"
+              to="/cart"
+            >
               <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
               <span className="ml-2 text-sm font-medium text-gray700">0</span>
             </Link>
