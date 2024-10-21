@@ -98,11 +98,9 @@ export const callouts = [
 ];
 export const navigation = {
   categories: [
-    { id: "shop", name: "Shop" },
-    { id: "deals", name: "Deals" },
-  ],
-  pages: [
-    { name: "About", href: "#" },
-    { name: "Contact", href: "#" },
+    { id: "shop", name: "Shop", href: "/shop" },
+    { id: "deals", name: "Deals", href: "/deals" },
+    { id: "about", name: "About", href: "/about" },
+    { id: "contact", name: "Contact", href: "/contact" },
   ],
 };

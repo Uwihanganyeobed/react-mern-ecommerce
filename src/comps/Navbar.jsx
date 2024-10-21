@@ -6,10 +6,11 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-
+import { Link } from "react-router-dom";
 import { navigation } from "../utils/items";
 
 export default function Navbar() {
+  
   const [open, setOpen] = useState(false);
 
   return (
@@ -35,22 +36,13 @@ export default function Navbar() {
             {/* Navigation Links */}
             <div className="mt-6">
               {navigation.categories.map((category) => (
-                <a
+                <Link
                   key={category.name}
-                  href="#1"
+                  to={category.href}
                   className="block p-2 font-medium text-gray-900"
                 >
                   {category.name}
-                </a>
-              ))}
-              {navigation.pages.map((page) => (
-                <a
-                  key={page.name}
-                  href={page.href}
-                  className="block p-2 font-medium text-gray-900"
-                >
-                  {page.name}
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -109,23 +101,15 @@ export default function Navbar() {
           {/* Left-Side Links (Desktop Only) */}
           <div className="hidden lg:flex lg:space-x-4 lg:mr-auto">
             {navigation.categories.map((category) => (
-              <a
+              <Link
                 key={category.name}
-                href="#3"
+                to={category.href}
                 className="text-lg font-medium text-gray-700 hover:text-gray-800"
               >
                 {category.name}
-              </a>
+              </Link>
             ))}
-            {navigation.pages.map((page) => (
-              <a
-                key={page.name}
-                href={page.href}
-                className="text-lg font-medium text-gray-700 hover:text-gray-800"
-              >
-                {page.name}
-              </a>
-            ))}
+            
           </div>
 
           {/* Search Bar (Desktop Only) */}
