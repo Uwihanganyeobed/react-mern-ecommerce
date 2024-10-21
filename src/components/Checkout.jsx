@@ -1,5 +1,6 @@
 import React from "react";
 import { countires } from "../utils/items";
+import { Link } from "react-router-dom";
 
 export default function Checkout() {
   return (
@@ -270,9 +271,12 @@ export default function Checkout() {
                   <p className="text-gray-700">$135.00</p>
                 </div>
               </div>
+              <Link to='/order'>
               <button className="w-full bg-indigo-600 text-white py-3 rounded-lg mt-6 hover:bg-indigo-700 transition duration-150 ease-in-out">
                 Place order
               </button>
+              </Link>
+              
             </div>
           </div>
         </div>

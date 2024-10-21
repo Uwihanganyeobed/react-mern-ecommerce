@@ -10,6 +10,7 @@ import Checkout from "./components/Checkout";
 import Form from "./components/Form";
 import MonoProduct from "./components/MonoProduct";
 import Reviews from "./components/Reviews";
+import OrderHistroy from "./components/OrderHistroy";
 
 export default function App() {
   return (
@@ -25,8 +26,8 @@ export default function App() {
             <Route path="/login" element={<Form type="login" />} />
             <Route path="/register" element={<Form type="register" />} />
             <Route path="/mono" element={<MonoProduct  />} />
-            <Route path="/review" element={<Reviews  />} />
-
+            <Route path="/one" element={<Reviews  />} />
+            <Route path="/order" element={<OrderHistroy  />} />
           </Routes>
         </div>
         <Footer />
