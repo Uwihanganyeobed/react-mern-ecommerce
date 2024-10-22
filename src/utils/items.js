@@ -1,50 +1,70 @@
 export const products = [
   {
     id: 1,
-    name: "Basic Tee",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-01.jpg",
-    imageAlt: "Front of men's Basic Tee in black.",
-    price: "$35",
-    color: "Black",
+    name: 'Trendy Jacket',
+    price: '$100',
+    category: "Women's Winter Wear",
+    imageUrl: 'https://pagedone.io/asset/uploads/1700731972.png',
+    rating: 4,
   },
-  // {
-  //   id: 2,
-  //   name: "Classic Hoodie",
-  //   imageSrc:
-  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-02.jpg",
-  //   imageAlt: "Front of Classic Hoodie in grey.",
-  //   price: "$55",
-  //   color: "Grey",
-  // },
-  // {
-  //   id: 3,
-  //   name: "Running Shoes",
-  //   imageSrc:
-  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-04.jpg",
-  //   imageAlt: "Running Shoes in black and white.",
-  //   price: "$120",
-  //   color: "Black/White",
-  // },
-  // {
-  //   id: 4,
-  //   name: "Denim Jacket",
-  //   imageSrc:
-  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-03.jpg",
-  //   imageAlt: "Front of Denim Jacket.",
-  //   price: "$75",
-  //   color: "Blue",
-  // },
-  // {
-  //   id: 5,
-  //   name: "Running Shoes",
-  //   imageSrc:
-  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-04.jpg",
-  //   imageAlt: "Running Shoes in black and white.",
-  //   price: "$120",
-  //   color: "Black/White",
-  // },
+  {
+    id: 2,
+    name: 'Black Blazer',
+    price: '$100',
+    category: "Men’s Suits",
+    imageUrl: 'https://pagedone.io/asset/uploads/1700731993.png',
+    rating: 5,
+  },
+  {
+    id: 3,
+    name: 'Red Flowers',
+    price: '$100',
+    category: 'Womenswear',
+    imageUrl: 'https://pagedone.io/asset/uploads/1700732011.png',
+    rating: 3,
+  },
+  {
+    id: 4,
+    name: 'Denim Jacket',
+    price: '$100',
+    category: 'Children Wear',
+    imageUrl: 'https://pagedone.io/asset/uploads/1700732027.png',
+    rating: 4,
+  },
+  {
+    id: 5,
+    name: 'Trendy Jacket',
+    price: '$100',
+    category: "Women's Winter Wear",
+    imageUrl: 'https://pagedone.io/asset/uploads/1700731972.png',
+    rating: 7,
+  },
+  {
+    id: 6,
+    name: 'Black Blazer',
+    price: '$100',
+    category: "Men’s Suits",
+    imageUrl: 'https://pagedone.io/asset/uploads/1700731993.png',
+    rating: 3,
+  },
+  {
+    id: 7,
+    name: 'Red Flowers',
+    price: '$100',
+    category: 'Womenswear',
+    imageUrl: 'https://pagedone.io/asset/uploads/1700732011.png',
+    rating: 10,
+  },
+  {
+    id: 8,
+    name: 'Denim Jacket',
+    price: '$100',
+    category: 'Children Wear',
+    imageUrl: 'https://pagedone.io/asset/uploads/1700732027.png',
+    rating: 5,
+  },
 ];
+
 export const slides = [
   {
     title: "Boost your productivity.",

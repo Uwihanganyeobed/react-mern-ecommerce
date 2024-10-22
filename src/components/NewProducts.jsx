@@ -2,74 +2,10 @@ import React from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css'; 
 import 'slick-carousel/slick/slick-theme.css'; 
+import { products } from '../utils/items';
 
 const NewProducts = () => {
-  const products = [
-    {
-      id: 1,
-      name: 'Trendy Jacket',
-      price: '$100',
-      category: "Women's Winter Wear",
-      imageUrl: 'https://pagedone.io/asset/uploads/1700731972.png',
-      rating: 4,
-    },
-    {
-      id: 2,
-      name: 'Black Blazer',
-      price: '$100',
-      category: "Men’s Suits",
-      imageUrl: 'https://pagedone.io/asset/uploads/1700731993.png',
-      rating: 5,
-    },
-    {
-      id: 3,
-      name: 'Red Flowers',
-      price: '$100',
-      category: 'Womenswear',
-      imageUrl: 'https://pagedone.io/asset/uploads/1700732011.png',
-      rating: 3,
-    },
-    {
-      id: 4,
-      name: 'Denim Jacket',
-      price: '$100',
-      category: 'Children Wear',
-      imageUrl: 'https://pagedone.io/asset/uploads/1700732027.png',
-      rating: 4,
-    },
-    {
-      id: 5,
-      name: 'Trendy Jacket',
-      price: '$100',
-      category: "Women's Winter Wear",
-      imageUrl: 'https://pagedone.io/asset/uploads/1700731972.png',
-      rating: 7,
-    },
-    {
-      id: 6,
-      name: 'Black Blazer',
-      price: '$100',
-      category: "Men’s Suits",
-      imageUrl: 'https://pagedone.io/asset/uploads/1700731993.png',
-      rating: 3,
-    },
-    {
-      id: 7,
-      name: 'Red Flowers',
-      price: '$100',
-      category: 'Womenswear',
-      imageUrl: 'https://pagedone.io/asset/uploads/1700732011.png',
-      rating: 10,
-    },
-    {
-      id: 8,
-      name: 'Denim Jacket',
-      price: '$100',
-      category: 'Children Wear',
-      imageUrl: 'https://pagedone.io/asset/uploads/1700732027.png',
-      rating: 5,
-    },
-  ];
+
 
   const settings = {
     dots: true,
