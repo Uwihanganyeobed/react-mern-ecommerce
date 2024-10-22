@@ -38,7 +38,7 @@ export default function Navbar() {
                 <Link
                   key={category.name}
                   to={category.href}
-                  className="block p-2 font-medium text-gray-900"
+                  className="block p-2 font-medium text-gray-900 hover:text-blue-600"
                 >
                   {category.name}
                 </Link>
@@ -103,7 +103,7 @@ export default function Navbar() {
               <Link
                 key={category.name}
                 to={category.href}
-                className="text-lg font-medium text-gray-700 hover:text-gray-800"
+                className="text-lg font-medium text-gray-700 hover:text-blue-600"
               >
                 {category.name}
               </Link>
@@ -131,7 +131,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center space-x-4 ml-auto">
             <Link
               to="/login"
-              className="text-lg font-medium text-gray-700 hover:text-gray-800"
+              className="text-lg font-medium text-gray-700 hover:text-blue-600 "
             >
               Account
             </Link>

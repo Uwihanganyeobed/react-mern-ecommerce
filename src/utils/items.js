@@ -8,42 +8,42 @@ export const products = [
     price: "$35",
     color: "Black",
   },
-  {
-    id: 2,
-    name: "Classic Hoodie",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-02.jpg",
-    imageAlt: "Front of Classic Hoodie in grey.",
-    price: "$55",
-    color: "Grey",
-  },
-  {
-    id: 3,
-    name: "Running Shoes",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-04.jpg",
-    imageAlt: "Running Shoes in black and white.",
-    price: "$120",
-    color: "Black/White",
-  },
-  {
-    id: 4,
-    name: "Denim Jacket",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-03.jpg",
-    imageAlt: "Front of Denim Jacket.",
-    price: "$75",
-    color: "Blue",
-  },
-  {
-    id: 5,
-    name: "Running Shoes",
-    imageSrc:
-      "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-04.jpg",
-    imageAlt: "Running Shoes in black and white.",
-    price: "$120",
-    color: "Black/White",
-  },
+  // {
+  //   id: 2,
+  //   name: "Classic Hoodie",
+  //   imageSrc:
+  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-02.jpg",
+  //   imageAlt: "Front of Classic Hoodie in grey.",
+  //   price: "$55",
+  //   color: "Grey",
+  // },
+  // {
+  //   id: 3,
+  //   name: "Running Shoes",
+  //   imageSrc:
+  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-04.jpg",
+  //   imageAlt: "Running Shoes in black and white.",
+  //   price: "$120",
+  //   color: "Black/White",
+  // },
+  // {
+  //   id: 4,
+  //   name: "Denim Jacket",
+  //   imageSrc:
+  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-03.jpg",
+  //   imageAlt: "Front of Denim Jacket.",
+  //   price: "$75",
+  //   color: "Blue",
+  // },
+  // {
+  //   id: 5,
+  //   name: "Running Shoes",
+  //   imageSrc:
+  //     "https://tailwindui.com/plus/img/ecommerce-images/product-page-01-related-product-04.jpg",
+  //   imageAlt: "Running Shoes in black and white.",
+  //   price: "$120",
+  //   color: "Black/White",
+  // },
 ];
 export const slides = [
   {
@@ -98,9 +98,9 @@ export const callouts = [
 ];
 export const navigation = {
   categories: [
-    { id: "shop", name: "Shop", href: "/shop" },
     { id: "deals", name: "Deals", href: "/deals" },
     { id: "about", name: "About", href: "/about" },
+    { id: "blog", name: "Blog", href: "/blog" },
     { id: "contact", name: "Contact", href: "/contact" },
   ],
 };

@@ -11,6 +11,10 @@ import Form from "./components/Form";
 import MonoProduct from "./components/MonoProduct";
 import Reviews from "./components/Reviews";
 import OrderHistroy from "./components/OrderHistroy";
+import About from "./components/About";
+import Contact from "./components/Contact";
+import Blog from "./components/Blog";
+import NewProducts from "./components/NewProducts";
 
 export default function App() {
   return (
@@ -28,6 +32,9 @@ export default function App() {
             <Route path="/mono" element={<MonoProduct  />} />
             <Route path="/one" element={<Reviews  />} />
             <Route path="/order" element={<OrderHistroy  />} />
+            <Route path="/about" element={<About  />} />
+            <Route path="/contact" element={<Contact  />} />
+            <Route path="/blog" element={<Blog  />} />
           </Routes>
         </div>
         <Footer />
@@ -42,6 +49,7 @@ const Main = () => {
       <Headings />
       <Featured />
       <Categories />
+      <NewProducts/>
     </div>
   );
 };

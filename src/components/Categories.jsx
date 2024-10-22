@@ -1,28 +1,30 @@
 import React from "react";
 import Slider from "react-slick"; // Import the Slick carousel
-import { callouts } from "../utils/items";
+import { callouts } from "../utils/items"; // Assuming callouts is an array of items
 import "slick-carousel/slick/slick.css"; // Slick Carousel CSS
 import "slick-carousel/slick/slick-theme.css"; // Slick Theme CSS
 
-export default function Example() {
+export default function Categories() {
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 3, // Adjust depending on how many items you want to show
+    slidesToShow: 3, // Show 3 items at a time
     slidesToScroll: 1,
+    autoplay: true, // Enable autoplay
+    autoplaySpeed: 3000, // Set autoplay speed to 3 seconds
     responsive: [
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: 2,
+          slidesToShow: 2, // Show 2 items on medium screens
           slidesToScroll: 1,
         },
       },
       {
         breakpoint: 600,
         settings: {
-          slidesToShow: 1,
+          slidesToShow: 1, // Show 1 item on small screens
           slidesToScroll: 1,
         },
       },
