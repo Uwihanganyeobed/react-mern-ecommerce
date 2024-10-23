@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css'; 
 import 'slick-carousel/slick/slick-theme.css'; 
-import { products } from '../utils/items';
+import Skeleton from 'react-loading-skeleton'; // Import Skeleton loader
+import 'react-loading-skeleton/dist/skeleton.css'; // Import skeleton styles
 
 const NewProducts = () => {
+  const [newProducts, setNewProducts] = useState([]);
 
+  useEffect(() => {
+    // Fetch the backend data (replace with your actual backend API endpoint)
+    fetch("http://localhost:5000/products")
+      .then(response => response.json())
+      .then(data => {
+        // Filter the products to include only new items and exclude 'logo-admin'
+        const filteredProducts = data.filter(product => 
+          product.is_new && product.category !== "logo-admin"
+        );
+
+        setNewProducts(filteredProducts);
+      })
+      .catch(error => console.error("Error fetching data:", error));
+  }, []);
 
   const settings = {
     dots: true,
@@ -33,18 +49,39 @@ const NewProducts = () => {
     ],
   };
 
+  if (newProducts.length === 0) {
+    return (
+      <section className="py-24 bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">New Arrivals</h2>
+          {/* Loading Skeletons */}
+          <Slider {...settings}>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="p-4">
+                <Skeleton height={224} className="rounded-lg mb-2" /> {/* Image Skeleton */}
+                <Skeleton height={20} width={`80%`} /> {/* Name Skeleton */}
+                <Skeleton height={20} width={`50%`} /> {/* Price Skeleton */}
+                <Skeleton height={15} width={`60%`} /> {/* Category Skeleton */}
+              </div>
+            ))}
+          </Slider>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-24 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">New Arrivals</h2>
         <Slider {...settings}>
-          {products.map(product => (
-            <div key={product.id} className="p-4">
+          {newProducts.map(product => (
+            <div key={product._id} className="p-4">
               <a href="#1:" className="relative bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer">
-                <img className="rounded-t-lg object-cover w-full h-56" src={product.imageUrl} alt={`${product.name} image`} />
+                <img className="rounded-t-lg object-cover w-full h-56" src={product.image} alt={`${product.name} image`} />
                 <div className="p-4">
                   <h6 className="font-semibold text-base leading-7 text-black">{product.name}</h6>
-                  <h6 className="font-semibold text-base leading-7 text-indigo-600 text-right">{product.price}</h6>
+                  <h6 className="font-semibold text-base leading-7 text-indigo-600 text-right">${product.new_price}</h6>
                   <p className="text-xs leading-5 text-gray-500">{product.category}</p>
                   <div className="flex items-center mt-1">
                     {[...Array(5)].map((_, index) => (

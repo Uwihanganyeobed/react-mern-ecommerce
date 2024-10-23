@@ -10,14 +10,14 @@ const Blog = () => {
       date: 'Oct 01, 2024',
       title: 'Top 5 Tips for Successful Online Shopping in Kigali',
       description: 'Learn how to navigate online shopping platforms effectively and make informed purchases.',
-      imageUrl: '/assets/logo.png'
+      imageUrl: '/assets/blog/blog1.jpeg'
     },
     {
       id: 2,
       date: 'Oct 15, 2024',
       title: 'Understanding E-commerce Trends in Rwanda',
       description: 'Stay updated with the latest trends in e-commerce and how they can benefit your shopping experience.',
-      imageUrl: '/assets/logo.png'
+      imageUrl: '/assets/blog/blog2.jpeg'
 
     },
     {
@@ -25,7 +25,7 @@ const Blog = () => {
       date: 'Oct 22, 2024',
       title: 'How to Choose the Right Products for Your Needs',
       description: 'A guide to selecting products that best fit your lifestyle and budget while shopping online.',
-      imageUrl: '/assets/logo.png'
+      imageUrl: '/assets/blog/blog3.jpeg'
 
     }
   ];
