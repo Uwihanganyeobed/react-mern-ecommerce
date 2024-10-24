@@ -16,13 +16,13 @@ const About = () => {
             <div className="pt-24 lg:justify-center sm:justify-end justify-start items-start gap-2.5 flex">
               <img 
                 className="rounded-xl object-cover" 
-                src="/assets/logo.png" // Update with your image URL
+                src="/assets/about/about.png" // Update with your image URL
                 alt="Team collaboration in e-commerce" 
               />
             </div>
             <img 
               className="sm:ml-0 ml-auto rounded-xl object-cover" 
-              src="/assets/logo.png" // Update with your image URL              // Update with your image URL
+              src="/assets/blog/blog2.jpeg" // Update with your image URL              // Update with your image URL
               alt="E-commerce office environment" 
             />
           </div>

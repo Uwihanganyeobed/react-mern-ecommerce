@@ -78,7 +78,7 @@ const NewProducts = () => {
           {newProducts.map(product => (
             <div key={product._id} className="p-4">
               <a href="#1:" className="relative bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer">
-                <img className="rounded-t-lg object-cover w-full h-56" src={product.image} alt={`${product.name} image`} />
+                <img className="rounded-t-lg object-cover w-full h-56" src={product.image} alt={product.name} />
                 <div className="p-4">
                   <h6 className="font-semibold text-base leading-7 text-black">{product.name}</h6>
                   <h6 className="font-semibold text-base leading-7 text-indigo-600 text-right">${product.new_price}</h6>

@@ -1,11 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  TwitterIcon,
-  InstagramIcon,
-  FacebookIcon,
-  YoutubeIcon,
-} from "@heroicons/react/outline"; // import outline icons
+
 const Footer = () => {
   return (
     <footer className="w-full bg-slate-100 py-10 border-t">

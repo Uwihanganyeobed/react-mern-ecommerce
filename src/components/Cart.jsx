@@ -49,7 +49,7 @@ export default function Cart() {
 
                   <div className="mt-8">
                     <div className="flow-root">
-                      <ul
+                      <label
                         role="list"
                         className="-my-6 divide-y divide-gray-200"
                       >
@@ -111,7 +111,7 @@ export default function Cart() {
                             </div>
                           </li>
                         ))}
-                      </ul>
+                      </label>
                     </div>
                   </div>
                 </div>

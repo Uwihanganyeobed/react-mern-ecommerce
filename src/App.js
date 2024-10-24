@@ -15,13 +15,14 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import Blog from "./components/Blog";
 import NewProducts from "./components/NewProducts";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
 
 export default function App() {
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        {/* Add other components or content below the navbar */}
         <div className="flex flex-col flex-grow">
           <Routes>
             <Route path="/" element={<Main />} />
@@ -29,15 +30,16 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/login" element={<Form type="login" />} />
             <Route path="/register" element={<Form type="register" />} />
-            <Route path="/mono" element={<MonoProduct  />} />
-            <Route path="/one" element={<Reviews  />} />
-            <Route path="/order" element={<OrderHistroy  />} />
-            <Route path="/about" element={<About  />} />
-            <Route path="/contact" element={<Contact  />} />
-            <Route path="/blog" element={<Blog  />} />
+            <Route path="/mono" element={<MonoProduct />} />
+            <Route path="/one" element={<Reviews />} />
+            <Route path="/order" element={<OrderHistroy />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/blog" element={<Blog />} />
           </Routes>
         </div>
         <Footer />
+        <ToastContainer /> {/* ToastContainer for displaying toasts */}
       </div>
     </BrowserRouter>
   );
@@ -49,7 +51,7 @@ const Main = () => {
       <Headings />
       <Featured />
       <Categories />
-      <NewProducts/>
+      <NewProducts />
     </div>
   );
 };
