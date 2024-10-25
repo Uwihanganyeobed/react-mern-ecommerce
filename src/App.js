@@ -30,7 +30,11 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/login" element={<Form type="login" />} />
             <Route path="/register" element={<Form type="register" />} />
-            <Route path="/mono" element={<MonoProduct />} />
+            <Route path="/:id" element={<MonoProduct />} />
+            <Route path="/blog/:id" element={<MonoProduct />} />
+            <Route path="/featured/:id" element={<MonoProduct />} />
+            <Route path="/new/:id" element={<MonoProduct />} />
+            <Route path="/category/:id" element={<MonoProduct />} />
             <Route path="/one" element={<Reviews />} />
             <Route path="/order" element={<OrderHistroy />} />
             <Route path="/about" element={<About />} />

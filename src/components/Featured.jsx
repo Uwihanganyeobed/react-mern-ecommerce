@@ -110,7 +110,7 @@ export default function Featured() {
                       </div>
 
                       {/* Image with Hover */}
-                      <Link to={`/product/${product._id}`}>
+                      <Link to={`/featured/${product._id}`}>
                         <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80 cursor-pointer">
                           <img
                             alt={product.name}
@@ -123,7 +123,7 @@ export default function Featured() {
                       <div className="mt-4 flex justify-between">
                         <div>
                           <h3 className="text-sm text-gray-700">
-                            <Link to={`/product/${product._id}`}>
+                            <Link to={`/featured/${product._id}`}>
                               <span aria-hidden="true" className="absolute inset-0" />
                               {product.name}
                             </Link>

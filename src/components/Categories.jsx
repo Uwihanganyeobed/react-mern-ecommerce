@@ -87,7 +87,7 @@ export default function Categories() {
           <Slider {...settings} className="mt-6">
             {categories.map((categoryProduct) => (
               <div key={categoryProduct._id} className="group relative p-2">
-                <Link to={`/category/${categoryProduct.category}`} className="block">
+                <Link to={`/category/${categoryProduct._id}`} className="block">
                   <div className="relative h-80 w-full overflow-hidden rounded-lg bg-white sm:aspect-h-1 sm:aspect-w-2 lg:aspect-h-1 lg:aspect-w-1 group-hover:opacity-75 sm:h-64 transition duration-300 ease-in-out transform hover:scale-105">
                     <img
                       alt={categoryProduct.name}

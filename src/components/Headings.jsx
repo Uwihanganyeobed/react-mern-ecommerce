@@ -19,7 +19,7 @@ export default function Headings() {
         const response = await axios.get("http://localhost:5000/products/");
         // Filter products by category 'logo-admin'
         const filteredProducts = response.data.filter(
-          (product) => product.category === "logo-admin"
+          (product) => product.category === "automotive"
         );
         setProducts(filteredProducts);
       } catch (error) {
@@ -44,12 +44,16 @@ export default function Headings() {
         <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-10">
           <div className="relative isolate overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 px-6 pt-16 shadow-lg sm:rounded-1xl sm:px-16 py-10 md:pt-24 lg:flex lg:gap-x-20 lg:px-24 lg:pt-0">
             <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
-              <Skeleton height={40} width={`80%`} className="mb-4" /> {/* Title Skeleton */}
-              <Skeleton height={20} width={`90%`} className="mb-4" /> {/* Description Skeleton */}
-              <Skeleton height={30} width={`50%`} className="mb-4" /> {/* Button Skeleton */}
+              <Skeleton height={40} width={`80%`} className="mb-4" />{" "}
+              {/* Title Skeleton */}
+              <Skeleton height={20} width={`90%`} className="mb-4" />{" "}
+              {/* Description Skeleton */}
+              <Skeleton height={30} width={`50%`} className="mb-4" />{" "}
+              {/* Button Skeleton */}
             </div>
             <div className="relative mt-16 h-80 lg:mt-8">
-              <Skeleton height="100%" width="100%" className="rounded-lg" /> {/* Image Skeleton */}
+              <Skeleton height="100%" width="100%" className="rounded-lg" />{" "}
+              {/* Image Skeleton */}
             </div>
           </div>
         </div>
@@ -58,7 +62,7 @@ export default function Headings() {
   }
 
   return (
-    <div className="bg-white"id="headings">
+    <div className="bg-white" id="headings">
       <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-10">
         <div className="relative isolate overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 px-6 pt-16 shadow-lg sm:rounded-1xl sm:px-16 py-10 md:pt-24 lg:flex lg:gap-x-20 lg:px-24 lg:pt-0">
           <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
@@ -73,10 +77,10 @@ export default function Headings() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6 lg:justify-start">
               <Link
-                to="/mono"
+                to={`/blog/${products[currentSlide]._id}`}
                 className="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-all duration-300"
               >
-                Shop Now
+                Buy Now
               </Link>
             </div>
           </div>

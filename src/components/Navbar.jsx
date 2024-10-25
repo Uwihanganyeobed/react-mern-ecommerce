@@ -13,7 +13,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="bg-white text-semibold text-xl">
+    <header className="bg-white text-semibold text-xl"id="home">
       {/* Announcement bar */}
       <div className="bg-indigo-600 text-white text-center py-2">
         Get free delivery on orders over $100
@@ -39,6 +39,7 @@ export default function Navbar() {
                   key={category.name}
                   to={category.href}
                   className="block p-2 font-medium text-gray-900 hover:text-blue-600"
+                  id={category.name}
                 >
                   {category.name}
                 </Link>
@@ -104,6 +105,7 @@ export default function Navbar() {
                 key={category.name}
                 to={category.href}
                 className="text-lg font-medium text-gray-700 hover:text-blue-600"
+                id={category.name}
               >
                 {category.name}
               </Link>

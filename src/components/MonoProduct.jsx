@@ -1,109 +1,94 @@
-
-import { useState } from "react";
-import { StarIcon } from "@heroicons/react/20/solid";
-import { Radio, RadioGroup } from "@headlessui/react";
-import { monoProducts, monoReviews } from "../utils/items";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { StarIcon } from '@heroicons/react/20/solid';
+import { Radio, RadioGroup } from '@headlessui/react';
+import { Link, useParams } from "react-router-dom"; // useParams to get the product ID from URL
 
 function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
+  return classes.filter(Boolean).join(' ');
 }
 
-export default function Monoproduct() {
-  const [selectedColor, setSelectedColor] = useState(monoProducts.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(monoProducts.sizes[2]);
+export default function Monoproduct() { 
+  const [product, setProduct] = useState(null); // Set product to null initially
+  const [selectedColor, setSelectedColor] = useState(null); // Color from backend
+  const [selectedSize, setSelectedSize] = useState(null); // Size from backend
+  const { id } = useParams(); // Get the product ID from URL params
+
+  // Fetch product by ID when component mounts
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const response = await fetch(`http://localhost:5000/products/${id}`); // Use the product ID to fetch data
+        const data = await response.json();
+        setProduct(data); // Set the fetched product
+        setSelectedColor(data.colors[0]); // Set default selected color
+        setSelectedSize(data.sizes[0]); // Set default selected size
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
+    }
+    fetchProduct();
+  }, [id]);
+
+  if (!product) {
+    return <div>Loading...</div>; // Display loading state while fetching
+  }
+
+  const reviews = {
+    average: product.rating,
+    totalCount: 117 // Static for now
+  };
 
   return (
-    <div className="bg-white"id="one">
+    <div className="bg-white">
       <div className="pt-6">
         <nav aria-label="Breadcrumb">
-          {/* use ol below */}
-          <label
-            role="list"
-            className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8"
-          >
-            {monoProducts.breadcrumbs.map((breadcrumb) => (
-              <li key={breadcrumb.id}>
-                <div className="flex items-center">
-                  <a
-                    href={breadcrumb.href}
-                    className="mr-2 text-sm font-medium text-gray-900"
-                  >
-                    {breadcrumb.name}
-                  </a>
-                  <svg
-                    fill="currentColor"
-                    width={16}
-                    height={20}
-                    viewBox="0 0 16 20"
-                    aria-hidden="true"
-                    className="h-5 w-4 text-gray-300"
-                  >
-                    <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
-                  </svg>
-                </div>
-              </li>
-            ))}
+          <ol role="list" className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+            <li key={product.category}>
+              <div className="flex items-center">
+                <a href="#" className="mr-2 text-sm font-medium text-gray-900">
+                  {product.category}
+                </a>
+                <svg
+                  fill="currentColor"
+                  width={16}
+                  height={20}
+                  viewBox="0 0 16 20"
+                  aria-hidden="true"
+                  className="h-5 w-4 text-gray-300"
+                >
+                  <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
+                </svg>
+              </div>
+            </li>
             <li className="text-sm">
-              <a
-                href={monoProducts.href}
-                aria-current="page"
-                className="font-medium text-gray-500 hover:text-gray-600"
-              >
-                {monoProducts.name}
+              <a href="#" aria-current="page" className="font-medium text-gray-500 hover:text-gray-600">
+                {product.name}
               </a>
             </li>
-          </label>
+          </ol>
         </nav>
 
         {/* Image gallery */}
         <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8">
           <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden rounded-lg lg:block">
             <img
-              alt={monoProducts.images[0].alt}
-              src={monoProducts.images[0].src}
-              className="h-full w-full object-cover object-center"
-            />
-          </div>
-          <div className="hidden lg:grid lg:grid-cols-1 lg:gap-y-8">
-            <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
-              <img
-                alt={monoProducts.images[1].alt}
-                src={monoProducts.images[1].src}
-                className="h-full w-full object-cover object-center"
-              />
-            </div>
-            <div className="aspect-h-2 aspect-w-3 overflow-hidden rounded-lg">
-              <img
-                alt={monoProducts.images[2].alt}
-                src={monoProducts.images[2].src}
-                className="h-full w-full object-cover object-center"
-              />
-            </div>
-          </div>
-          <div className="aspect-h-5 aspect-w-4 lg:aspect-h-4 lg:aspect-w-3 sm:overflow-hidden sm:rounded-lg">
-            <img
-              alt={monoProducts.images[3].alt}
-              src={monoProducts.images[3].src}
+              alt={product.name}
+              src={product.image} // Main image from backend
               className="h-full w-full object-cover object-center"
             />
           </div>
         </div>
 
-        {/* monoProducts info */}
+        {/* Product info */}
         <div className="mx-auto max-w-2xl px-4 pb-16 pt-10 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:grid-rows-[auto,auto,1fr] lg:gap-x-8 lg:px-8 lg:pb-24 lg:pt-16">
           <div className="lg:col-span-2 lg:border-r lg:border-gray-200 lg:pr-8">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-              {monoProducts.name}
-            </h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">{product.name}</h1>
           </div>
 
           {/* Options */}
           <div className="mt-4 lg:row-span-3 lg:mt-0">
             <h2 className="sr-only">Product information</h2>
-            <p className="text-3xl tracking-tight text-gray-900">
-              {monoProducts.price}
-            </p>
+            <p className="text-3xl tracking-tight text-gray-900">${product.new_price}</p>
 
             {/* Reviews */}
             <div className="mt-6">
@@ -115,20 +100,15 @@ export default function Monoproduct() {
                       key={rating}
                       aria-hidden="true"
                       className={classNames(
-                        monoReviews.average > rating
-                          ? "text-gray-900"
-                          : "text-gray-200",
-                        "h-5 w-5 flex-shrink-0"
+                        reviews.average > rating ? 'text-gray-900' : 'text-gray-200',
+                        'h-5 w-5 flex-shrink-0',
                       )}
                     />
                   ))}
                 </div>
-                <p className="sr-only">{monoReviews.average} out of 5 stars</p>
-                <a
-                  href={monoReviews.href}
-                  className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                >
-                  {monoReviews.totalCount} reviews
+                <p className="sr-only">{reviews.average} out of 5 stars</p>
+                <a href="#" className="ml-3 text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                  {reviews.totalCount} reviews
                 </a>
               </div>
             </div>
@@ -139,28 +119,16 @@ export default function Monoproduct() {
                 <h3 className="text-sm font-medium text-gray-900">Color</h3>
 
                 <fieldset aria-label="Choose a color" className="mt-4">
-                  <RadioGroup
-                    value={selectedColor}
-                    onChange={setSelectedColor}
-                    className="flex items-center space-x-3"
-                  >
-                    {monoProducts.colors.map((color) => (
+                  <RadioGroup value={selectedColor} onChange={setSelectedColor} className="flex items-center space-x-3">
+                    {product.colors.map((color) => (
                       <Radio
-                        key={color.name}
+                        key={color._id}
                         value={color}
                         aria-label={color.name}
-                        className={classNames(
-                          color.selectedClass,
-                          "relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 focus:outline-none data-[checked]:ring-2 data-[focus]:data-[checked]:ring data-[focus]:data-[checked]:ring-offset-1"
-                        )}
+                        className="cursor-pointer"
                       >
-                        <span
-                          aria-hidden="true"
-                          className={classNames(
-                            color.class,
-                            "h-8 w-8 rounded-full border border-black border-opacity-10"
-                          )}
-                        />
+                        <span className="h-8 w-8 rounded-full border border-black border-opacity-10" />
+                        <span className="ml-2">{color.name}</span>
                       </Radio>
                     ))}
                   </RadioGroup>
@@ -169,109 +137,43 @@ export default function Monoproduct() {
 
               {/* Sizes */}
               <div className="mt-10">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-900">Size</h3>
-                  <label
-                    href="#"
-                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    Size guide
-                  </label>
-                </div>
-
+                <h3 className="text-sm font-medium text-gray-900">Size</h3>
                 <fieldset aria-label="Choose a size" className="mt-4">
-                  <RadioGroup
-                    value={selectedSize}
-                    onChange={setSelectedSize}
-                    className="grid grid-cols-4 gap-4 sm:grid-cols-8 lg:grid-cols-4"
-                  >
-                    {monoProducts.sizes.map((size) => (
-                      <Radio
-                        key={size.name}
-                        value={size}
-                        disabled={!size.inStock}
-                        className={classNames(
-                          size.inStock
-                            ? "cursor-pointer bg-white text-gray-900 shadow-sm"
-                            : "cursor-not-allowed bg-gray-50 text-gray-200",
-                          "group relative flex items-center justify-center rounded-md border px-4 py-3 text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none data-[focus]:ring-2 data-[focus]:ring-indigo-500 sm:flex-1 sm:py-6"
-                        )}
-                      >
+                  <RadioGroup value={selectedSize} onChange={setSelectedSize} className="grid grid-cols-4 gap-4">
+                    {product.sizes.map((size) => (
+                      <Radio key={size._id} value={size} className="cursor-pointer">
                         <span>{size.name}</span>
-                        {size.inStock ? (
-                          <span
-                            aria-hidden="true"
-                            className="pointer-events-none absolute -inset-px rounded-md border-2 border-transparent group-data-[focus]:border group-data-[checked]:border-indigo-500"
-                          />
-                        ) : (
-                          <span
-                            aria-hidden="true"
-                            className="pointer-events-none absolute -inset-px rounded-md border-2 border-gray-200"
-                          >
-                            <svg
-                              stroke="currentColor"
-                              viewBox="0 0 100 100"
-                              preserveAspectRatio="none"
-                              className="absolute inset-0 h-full w-full stroke-2 text-gray-200"
-                            >
-                              <line
-                                x1={0}
-                                x2={100}
-                                y1={100}
-                                y2={0}
-                                vectorEffect="non-scaling-stroke"
-                              />
-                            </svg>
-                          </span>
-                        )}
                       </Radio>
                     ))}
                   </RadioGroup>
                 </fieldset>
               </div>
-
-              <Link
-                to="/cart"
-                className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              <Link to='/cart'>
+              <button
+                type="submit"
+                className="mt-10 w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700"
               >
-                Add to bag
+                Add to Cart
+              </button>
               </Link>
+              
             </form>
           </div>
 
-          <div className="py-10 lg:col-span-2 lg:col-start-1 lg:border-r lg:border-gray-200 lg:pb-16 lg:pr-8 lg:pt-6">
-            {/* Description and details */}
-            <div>
-              <h3 className="sr-only">Description</h3>
+          {/* Description */}
+          <div className="py-10 lg:col-span-2 lg:border-r lg:border-gray-200 lg:pb-16 lg:pr-8 lg:pt-6">
+            <h3 className="text-base font-bold text-gray-900">Description</h3>
+            <p className="text-base text-gray-900 mt-4">{product.description}</p>
 
-              <div className="space-y-6">
-                <p className="text-base text-gray-900">
-                  {monoProducts.description}
-                </p>
-              </div>
-            </div>
+            <h3 className="text-sm font-medium text-gray-900 mt-10">Highlights</h3>
+            <ul className="list-disc pl-5 space-y-2 mt-2">
+              {product.highlights.map((highlight, index) => (
+                <li key={index} className="text-sm text-gray-600">{highlight}</li>
+              ))}
+            </ul>
 
-            <div className="mt-10">
-              <h3 className="text-sm font-medium text-gray-900">Highlights</h3>
-
-              <div className="mt-4">
-                <div role="list" className="list-disc space-y-2 pl-4 text-sm">
-                  {monoProducts.highlights.map((highlight) => (
-                    <li key={highlight} className="text-gray-400">
-                      <span className="text-gray-600">{highlight}</span>
-                    </li>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10">
-              <h2 className="text-sm font-medium text-gray-900">Details</h2>
-
-              <div className="mt-4 space-y-6">
-                <p className="text-sm text-gray-600">{monoProducts.details}</p>
-              </div>
-            </div>
+            <h3 className="text-sm font-medium text-gray-900 mt-10">Details</h3>
+            <p className="text-sm text-gray-600 mt-2">{product.details}</p>
           </div>
         </div>
       </div>
