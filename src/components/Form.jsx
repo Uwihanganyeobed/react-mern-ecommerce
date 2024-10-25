@@ -52,8 +52,9 @@ export default function Form({ type }) {
         });
 
         const data = await response.json();
+        console.log(data);
         if (data.success) {
-            toast.success(isLogin ? "Successfully logged in!" && console.log('Success login') : "Successfully signed up!");
+            toast.success(isLogin ? "Successfully logged in!" : "Successfully signed up!");
             navigate("/"); // Redirect after success
         } else {
             setErrors({ general: data.errors });
@@ -73,7 +74,7 @@ export default function Form({ type }) {
 
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8"id="form">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           {isLogin ? "Sign in to your account" : "Create a new account"}

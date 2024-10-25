@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export default function Checkout() {
   return (
-    <div className="min-h-screen bg-blue-50 flex flex-col justify-center py-12">
+    <div className="min-h-screen bg-blue-50 flex flex-col justify-center py-12"id="checkout">
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Left side - Contact, Shipping, Delivery, Payment */}

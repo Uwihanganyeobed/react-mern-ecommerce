@@ -58,7 +58,7 @@ export default function Headings() {
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-white"id="headings">
       <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-10">
         <div className="relative isolate overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 px-6 pt-16 shadow-lg sm:rounded-1xl sm:px-16 py-10 md:pt-24 lg:flex lg:gap-x-20 lg:px-24 lg:pt-0">
           <div className="mx-auto max-w-md text-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">

@@ -80,7 +80,7 @@ export default function Featured() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-white" id='featured'>
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">
           Featured Products
@@ -144,7 +144,11 @@ export default function Featured() {
                 ))}
               </Slider>
             ) : (
-              <p>No featured products available.</p>
+              <div>
+                 <Skeleton height={200} className="rounded-md mb-2" /> {/* Image Skeleton */}
+                <Skeleton height={20} width={`80%`} className="mb-2" /> {/* Title Skeleton */}
+                <Skeleton height={20} width={`50%`} /> {/* Price Skeleton */}
+              </div>
             )}
           </div>
         )}

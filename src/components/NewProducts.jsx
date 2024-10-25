@@ -71,7 +71,7 @@ const NewProducts = () => {
   }
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-24 bg-gray-50"id='newProducts'>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">New Arrivals</h2>
         <Slider {...settings}>

@@ -31,7 +31,7 @@ const OrderHistory = () => {
   ];
 
   return (
-    <section className="py-24 relative">
+    <section className="py-24 relative"id='orderHistory'>
       <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
         <h2 className="font-manrope font-extrabold text-3xl leading-10 text-black mb-9">Order History</h2>
 

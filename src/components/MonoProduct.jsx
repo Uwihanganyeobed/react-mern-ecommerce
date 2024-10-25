@@ -14,7 +14,7 @@ export default function Monoproduct() {
   const [selectedSize, setSelectedSize] = useState(monoProducts.sizes[2]);
 
   return (
-    <div className="bg-white">
+    <div className="bg-white"id="one">
       <div className="pt-6">
         <nav aria-label="Breadcrumb">
           {/* use ol below */}
