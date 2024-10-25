@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -6,14 +6,33 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track user login status
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if token is available in localStorage (or sessionStorage)
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      setIsLoggedIn(true); // User is logged in
+    } else {
+      setIsLoggedIn(false); // No user is logged in
+    }
+  }, []);
+
+  const handleLogout = () => {
+    // Remove the token on logout
+    localStorage.removeItem("authToken");
+    setIsLoggedIn(false);
+    navigate("/login"); // Redirect to login page after logout
+  };
 
   return (
-    <header className="bg-white text-semibold text-xl"id="home">
+    <header className="bg-white text-semibold text-xl" id="home">
       {/* Announcement bar */}
       <div className="bg-indigo-600 text-white text-center py-2">
         Get free delivery on orders over $100
@@ -61,19 +80,35 @@ export default function Navbar() {
               </button>
             </div>
 
+            {/* Account / Logout */}
+            <div className="mt-4">
+              {isLoggedIn ? (
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-lg font-medium text-gray-700 hover:text-red-600"
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  className="block w-full text-lg font-medium text-gray-700 hover:text-blue-600"
+                >
+                  Account
+                </Link>
+              )}
+            </div>
+
             {/* Cart Icon */}
             <Link className="mt-4 flex items-center justify-between" to="/cart">
               <span className="text-sm font-medium text-gray-700">
-                Cart (3)
-              </span>{" "}
-              {/* Change '3' to your dynamic cart count */}
+                Cart (0)
+              </span>
               <div className="relative">
                 <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
-                {/* Cart item count badge */}
                 <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 bg-red-600 text-white text-xs font-bold rounded-full">
                   0
-                </span>{" "}
-                {/* Change '3' to your dynamic cart count */}
+                </span>
               </div>
             </Link>
           </Dialog.Panel>
@@ -131,15 +166,23 @@ export default function Navbar() {
 
           {/* Right-side Controls (Desktop Only) */}
           <div className="hidden lg:flex items-center space-x-4 ml-auto">
-            <Link
-              to="/login"
-              className="text-lg font-medium text-gray-700 hover:text-blue-600 "
-            >
-              Account
-            </Link>
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="text-lg font-medium text-gray-700 hover:text-red-600"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="text-lg font-medium text-gray-700 hover:text-blue-600"
+              >
+                Account
+              </Link>
+            )}
             <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
 
-            {/* Currency (CAD) with Flag */}
             {/* Currency Selector */}
             <div className="inline-flex items-center">
               <select className="border border-gray-300 rounded-md text-sm font-medium text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2">
@@ -148,7 +191,7 @@ export default function Navbar() {
                     src="https://flagcdn.com/ca.svg"
                     alt="Canada Flag"
                     className="h-4 w-auto mr-1"
-                  />{" "}
+                  />
                   CAD
                 </option>
                 <option value="USD" className="flex items-center">
@@ -156,41 +199,15 @@ export default function Navbar() {
                     src="https://flagcdn.com/us.svg"
                     alt="USA Flag"
                     className="h-4 w-auto mr-1"
-                  />{" "}
+                  />
                   USD
                 </option>
-                <option value="EUR" className="flex items-center">
-                  <img
-                    src="https://flagcdn.com/eu.svg"
-                    alt="EU Flag"
-                    className="h-4 w-auto mr-1"
-                  />{" "}
-                  EUR
-                </option>
-                <option value="GBP" className="flex items-center">
-                  <img
-                    src="https://flagcdn.com/gb.svg"
-                    alt="UK Flag"
-                    className="h-4 w-auto mr-1"
-                  />{" "}
-                  GBP
-                </option>
-                <option value="AUD" className="flex items-center">
-                  <img
-                    src="https://flagcdn.com/au.svg"
-                    alt="Australia Flag"
-                    className="h-4 w-auto mr-1"
-                  />{" "}
-                  AUD
-                </option>
+                {/* Add other currency options */}
               </select>
             </div>
 
             {/* Cart Icon (Desktop Only) */}
-            <Link
-              className="flex items-center ml-auto cursor-pointer"
-              to="/cart"
-            >
+            <Link className="flex items-center ml-auto cursor-pointer" to="/cart">
               <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
               <span className="ml-2 text-sm font-medium text-gray700">0</span>
             </Link>

@@ -1,12 +1,11 @@
 // Form.js
 import React, { useState } from "react";
-import { formSchema } from "../utils/validations";
+import { formSchema } from "../utils/validations"; // Adjust validation rules accordingly
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 export default function Form({ type }) {
-  
   const navigate = useNavigate();
   const isLogin = type === "login";
   const [formData, setFormData] = useState({
@@ -33,48 +32,53 @@ export default function Form({ type }) {
     e.preventDefault();
 
     try {
-        // Parse only necessary fields for login
-        const dataToSend = isLogin 
-            ? { email: formData.email, password: formData.password } 
-            : { ...formData };
+      // Parse only necessary fields for login
+      const dataToSend = isLogin
+        ? { email: formData.email, password: formData.password }
+        : { ...formData };
 
-        formSchema.parse({
-            ...dataToSend,
-            confirmPassword: isLogin ? undefined : formData.confirmPassword,
-        });
+      // Validate form data with Zod schema
+      formSchema.parse({
+        ...dataToSend,
+        confirmPassword: isLogin ? undefined : formData.confirmPassword,
+      });
 
-        const response = await fetch(`http://localhost:5000/${isLogin ? "login" : "signup"}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(dataToSend), // Send only relevant data
-        });
+      const response = await fetch(`http://localhost:5000/auth/${isLogin ? "login" : "signup"}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend), // Send only relevant data
+      });
 
-        const data = await response.json();
-        console.log(data);
-        if (data.success) {
-            toast.success(isLogin ? "Successfully logged in!" : "Successfully signed up!");
-            navigate("/"); // Redirect after success
-        } else {
-            setErrors({ general: data.errors });
+      const data = await response.json();
+      if (data.success) {
+        toast.success(isLogin ? "Successfully logged in!" : "Successfully signed up!");
+        
+        if (data.token) {
+          // Store JWT in local storage for future use
+          localStorage.setItem("authToken", data.token);
         }
 
-        setErrors({});
+        navigate("/"); // Redirect after success
+      } else {
+        setErrors({ general: data.error });
+      }
+
+      setErrors({});
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            const fieldErrors = error.errors.reduce((acc, err) => {
-                acc[err.path[0]] = err.message;
-                return acc;
-            }, {});
-            setErrors(fieldErrors);
-        }
+      if (error instanceof z.ZodError) {
+        const fieldErrors = error.errors.reduce((acc, err) => {
+          acc[err.path[0]] = err.message;
+          return acc;
+        }, {});
+        setErrors(fieldErrors);
+      }
     }
-};
-
+  };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8"id="form">
+    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8" id="form">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
           {isLogin ? "Sign in to your account" : "Create a new account"}
@@ -95,7 +99,7 @@ export default function Form({ type }) {
                   name="name"
                   type="text"
                   placeholder="Enter your full name"
-                  required
+                  required={!isLogin}
                   autoComplete="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -127,7 +131,7 @@ export default function Form({ type }) {
             </div>
           </div>
 
-          {/* Phone field */}
+          {/* Phone field for sign-up */}
           {!isLogin && (
             <div>
               <label htmlFor="phone" className="block text-sm font-medium leading-6 text-gray-900">
@@ -139,7 +143,7 @@ export default function Form({ type }) {
                   name="phone"
                   type="tel"
                   placeholder="Enter your phone number"
-                  required
+                  required={!isLogin}
                   value={formData.phone}
                   onChange={handleChange}
                   className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -170,7 +174,7 @@ export default function Form({ type }) {
             </div>
           </div>
 
-          {/* Confirm Password for Registration */}
+          {/* Confirm Password field for sign-up */}
           {!isLogin && (
             <div>
               <label htmlFor="confirm-password" className="block text-sm font-medium leading-6 text-gray-900">
@@ -182,8 +186,7 @@ export default function Form({ type }) {
                   name="confirmPassword"
                   type="password"
                   placeholder="******"
-                  required
-                  autoComplete="new-password"
+                  required={!isLogin}
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -204,6 +207,7 @@ export default function Form({ type }) {
 
           {/* Display success message */}
           {successMessage && <p className="text-green-500 text-xs">{successMessage}</p>}
+
           {/* Display general errors if any */}
           {errors.general && <p className="text-red-500 text-xs">{errors.general}</p>}
         </form>
