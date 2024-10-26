@@ -1,11 +1,10 @@
-// Form.js
 import React, { useState } from "react";
-import { formSchema } from "../utils/validations"; // Adjust validation rules accordingly
+import { formSchema } from "../utils/validations";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function Form({ type }) {
+export default function Form({ type, onLoginStatusChange }) {
   const navigate = useNavigate();
   const isLogin = type === "login";
   const [formData, setFormData] = useState({
@@ -16,9 +15,7 @@ export default function Form({ type }) {
     phone: "",
     role: isLogin ? undefined : "User",
   });
-
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,41 +27,49 @@ export default function Form({ type }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // Parse only necessary fields for login
-      const dataToSend = isLogin
-        ? { email: formData.email, password: formData.password }
-        : { ...formData };
-
-      // Validate form data with Zod schema
-      formSchema.parse({
-        ...dataToSend,
-        confirmPassword: isLogin ? undefined : formData.confirmPassword,
-      });
-
+      const schema = formSchema(type);
+      schema.parse(formData);
+  
       const response = await fetch(`http://localhost:5000/auth/${isLogin ? "login" : "signup"}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dataToSend), // Send only relevant data
+        body: JSON.stringify(isLogin ? { email: formData.email, password: formData.password } : formData),
       });
-
+  
       const data = await response.json();
       if (data.success) {
-        toast.success(isLogin ? "Successfully logged in!" : "Successfully signed up!");
-        
+        toast.success(isLogin ? 'Welcome 😃 again!' : "Successfully signed up!");
+  
         if (data.token) {
-          // Store JWT in local storage for future use
-          localStorage.setItem("authToken", data.token);
+          localStorage.setItem("authToken", data.token); // Store token
+  
+          // Fetch user data using the token
+          const decodedToken = JSON.parse(atob(data.token.split('.')[1])); // Decode JWT to get user ID
+          const userId = decodedToken.id;
+  
+          // Fetch user details
+          const userResponse = await fetch(`http://localhost:5000/users/${userId}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${data.token}`,
+            },
+          });
+          const userData = await userResponse.json();
+  
+          if (userData && userData.name) {
+            localStorage.setItem("userName", userData.name); // Store username in localStorage
+          }
+  
+          onLoginStatusChange(true); // Notify parent component of login
         }
-
+  
         navigate("/"); // Redirect after success
       } else {
         setErrors({ general: data.error });
       }
-
       setErrors({});
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -206,7 +211,7 @@ export default function Form({ type }) {
           </div>
 
           {/* Display success message */}
-          {successMessage && <p className="text-green-500 text-xs">{successMessage}</p>}
+          {/* {successMessage && <p className="text-green-500 text-xs">{successMessage}</p>} */}
 
           {/* Display general errors if any */}
           {errors.general && <p className="text-red-500 text-xs">{errors.general}</p>}

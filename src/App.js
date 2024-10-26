@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -17,21 +17,34 @@ import Blog from "./components/Blog";
 import NewProducts from "./components/NewProducts";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
-import Login from "./auth/Login";
-import Register from "./auth/Register";
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      // Optionally verify token here or just set logged in state
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLoginStatusChange = (status) => {
+    setIsLoggedIn(status);
+  };
+
+
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
-        <Navbar />
+        <Navbar isLoggedIn={isLoggedIn} onLoginStatusChange={handleLoginStatusChange} />
         <div className="flex flex-col flex-grow">
           <Routes>
             <Route path="/" element={<Main />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route path="/register" element={<Form type='signup' onLoginStatusChange={handleLoginStatusChange} />} />
+            <Route path="/login" element={<Form type='login' onLoginStatusChange={handleLoginStatusChange} />} />
             <Route path="/:id" element={<MonoProduct />} />
             <Route path="/blog/:id" element={<MonoProduct />} />
             <Route path="/featured/:id" element={<MonoProduct />} />
@@ -60,4 +73,4 @@ const Main = () => {
       <NewProducts />
     </div>
   );
-};
+}
