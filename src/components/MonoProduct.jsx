@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { StarIcon } from "@heroicons/react/20/solid";
 import { Radio, RadioGroup } from "@headlessui/react";
 import { Link, useParams } from "react-router-dom"; // useParams to get the product ID from URL
-import RelatedProducts from "../components/RelatedProducts"
-
+import RelatedProducts from "../components/RelatedProducts";
+import { useCart } from "../context/itemsContext";
 
 export default function Monoproduct() {
   const [product, setProduct] = useState(null); // Set product to null initially
   const [selectedColor, setSelectedColor] = useState(null); // Color from backend
   const [selectedSize, setSelectedSize] = useState(null); // Size from backend
   const { id } = useParams(); // Get the product ID from URL params
+  const {addCartItem} = useCart();
 
   // Fetch product by ID when component mounts
   useEffect(() => {
@@ -31,20 +32,24 @@ export default function Monoproduct() {
     return <div>Loading...</div>; // Display loading state while fetching
   }
 
+  const handleAddToCart = ()=>{
+    const selectedProduct = {...product, color: selectedColor.name, size: selectedSize.name};
+    addCartItem(selectedProduct);
+  }
   const reviews = {
     average: product.rating,
     totalCount: 117, // Static for now
   };
 
   return (
-    <div className="bg-white">
+    <div className="bg-white overflow-hidden">
       <div className="pt-6">
         <nav aria-label="Breadcrumb">
-          <ol
+          <div
             role="list"
             className="mx-auto flex max-w-2xl items-center space-x-2 px-4 sm:px-6 lg:max-w-7xl lg:px-8"
           >
-            <li key={product.category}>
+            <label key={product.category}>
               <div className="flex items-center">
                 <a href="#1" className="mr-2 text-sm font-medium text-gray-900">
                   {product.category}
@@ -60,22 +65,23 @@ export default function Monoproduct() {
                   <path d="M5.697 4.34L8.98 16.532h1.327L7.025 4.341H5.697z" />
                 </svg>
               </div>
-            </li>
+            </label>
             <li className="text-sm">
-              <a
-                href="#"
+              <Link
+                to="/"
                 aria-current="page"
                 className="font-medium text-gray-500 hover:text-gray-600"
               >
                 {product.name}
-              </a>
+              </Link>
             </li>
-          </ol>
+          </div>
         </nav>
 
         {/* Image gallery */}
+        {/* Image gallery */}
         <div className="mx-auto mt-6 max-w-2xl sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-3 lg:gap-x-8 lg:px-8">
-          <div className="aspect-h-4 aspect-w-3 hidden overflow-hidden rounded-lg lg:block">
+          <div className="aspect-h-4 aspect-w-3 overflow-hidden rounded-lg">
             <img
               alt={product.name}
               src={product.image} // Main image from backend
@@ -167,12 +173,12 @@ export default function Monoproduct() {
               <div className="mt-10">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-medium text-gray-900">Size</h3>
-                  <a
-                    href="#"
+                  <Link
+                    to="/"
                     className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
                   >
                     Size guide
-                  </a>
+                  </Link>
                 </div>
 
                 <fieldset aria-label="Choose a size" className="mt-4">
@@ -230,6 +236,7 @@ export default function Monoproduct() {
                 <button
                   type="submit"
                   className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  onClick={handleAddToCart}
                 >
                   Add to Cart
                 </button>
@@ -258,7 +265,6 @@ export default function Monoproduct() {
             <h3 className="text-sm font-medium text-gray-900 mt-10">Details</h3>
             <p className="text-sm text-gray-600 mt-2">{product.details}</p>
           </div>
-          
         </div>
       </div>
       <RelatedProducts id={product._id} />

@@ -10,33 +10,42 @@ const RelatedProducts = ({ id }) => {
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    // Fetch related products based on the current product ID
     fetch(`http://localhost:5000/products/${id}/related/`)
       .then(response => response.json())
-      .then(data => setRelatedProducts(data))
+      .then(data => {
+        // Remove duplicates based on the product ID
+        const uniqueProducts = Array.from(new Set(data.map(product => product._id)))
+          .map(id => {
+            return data.find(product => product._id === id);
+          });
+        setRelatedProducts(uniqueProducts);
+      })
       .catch(error => console.error("Error fetching related products:", error));
   }, [id]);
 
+  // Determine the number of slides to show based on the available products
+  const slidesToShow = Math.min(relatedProducts.length, 3);
+  
   const settings = {
-    dots: true,
-    infinite: true,
+    dots: false,
+    infinite: relatedProducts.length > slidesToShow, // Infinite scroll only if more items than slidesToShow
     speed: 500,
-    slidesToShow: 4, // Show 4 items at once
-    slidesToScroll: 4, // Scroll through 4 items at once
+    slidesToShow: slidesToShow, // Dynamically set slidesToShow
+    slidesToScroll: 1,
     autoplay: true,
     autoplaySpeed: 3000,
     responsive: [
       {
-        breakpoint: 1024,
+        breakpoint: 768,
         settings: {
-          slidesToShow: 2, // Show 2 items on medium screens
-          slidesToScroll: 2,
+          slidesToShow: 1, // Show 1 item on smaller screens
+          slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 640,
+        breakpoint: 1024,
         settings: {
-          slidesToShow: 1, // Show 1 item on small screens
+          slidesToShow: Math.min(relatedProducts.length, 2), // Show 2 items on medium screens
           slidesToScroll: 1,
         },
       },
@@ -45,16 +54,16 @@ const RelatedProducts = ({ id }) => {
 
   if (relatedProducts.length === 0) {
     return (
-      <section className="py-24 bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">Related Products</h2>
+      <section className="py-8">
+        <div className="mx-auto max-w-6xl px-4">
+          <h2 className="font-bold text-2xl text-gray-800 mb-4">Related Products</h2>
           <Slider {...settings}>
             {Array.from({ length: 4 }).map((_, index) => (
               <div key={index} className="p-4">
-                <Skeleton height={224} className="rounded-lg mb-2" />
-                <Skeleton height={20} width={`80%`} />
-                <Skeleton height={20} width={`50%`} />
-                <Skeleton height={15} width={`60%`} />
+                <Skeleton height={200} className="rounded-lg mb-2" />
+                <Skeleton height={20} width="80%" />
+                <Skeleton height={15} width="50%" />
+                <Skeleton height={15} width="60%" />
               </div>
             ))}
           </Slider>
@@ -64,21 +73,23 @@ const RelatedProducts = ({ id }) => {
   }
 
   return (
-    <section className="py-24 bg-gray-50" id='relatedProducts'>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">Related Products</h2>
+    <section className="py-8" id="relatedProducts">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="font-bold text-2xl text-gray-800 mb-4">Related Products</h2>
         <Slider {...settings}>
           {relatedProducts.map(product => (
             <div key={product._id} className="p-4">
-              <Link to={`/new/${product._id}`} className="relative bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer">
-                <img className="rounded-t-lg object-cover w-full h-56" src={product.image} alt={product.name} />
+              <Link to={`/new/${product._id}`} className="block bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <img className="object-cover w-full h-56" src={product.image} alt={product.name} />
                 <div className="p-4">
-                  <h6 className="font-semibold text-base leading-7 text-black">{product.name}</h6>
-                  <h6 className="font-semibold text-base leading-7 text-indigo-600 text-right">${product.new_price}</h6>
-                  <p className="text-xs leading-5 text-gray-500">{product.category}</p>
-                  <div className="flex items-center mt-1">
+                  <h6 className="font-semibold text-lg text-gray-900">{product.name}</h6>
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-sm text-gray-500">{product.category}</span>
+                    <span className="text-lg font-bold text-indigo-600">${product.new_price}</span>
+                  </div>
+                  <div className="flex items-center mt-2">
                     {[...Array(5)].map((_, index) => (
-                      <svg key={index} className={`h-4 w-4 ${index < product.rating ? 'text-orange-600' : 'text-gray-300'}`} aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+                      <svg key={index} className={`h-4 w-4 ${index < product.rating ? 'text-yellow-400' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 .587l3.668 7.429L24 9.188c.285.041.396.391.191.586l-5.93 5.773L19.399 24c.049.285-.248.506-.495.372L12 18.896l-7.642 4.006c-.247.134-.544-.087-.495-.372l1.399-8.151L0 .587c-.205-.195-.094-.545.191-.586l8.209-1.188L12 .587z" />
                       </svg>
                     ))}
