@@ -2,61 +2,10 @@ import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
+import {blogs} from '../utils/items'
+import {blogSettings as settings} from "../utils/slickSettings"
 const Blog = () => {
-  const blogs = [
-    {
-      id: 1,
-      date: 'Oct 01, 2024',
-      title: 'Top 5 Tips for Successful Online Shopping in Kigali',
-      description: 'Learn how to navigate online shopping platforms effectively and make informed purchases.',
-      imageUrl: '/assets/blog/blog1.jpeg'
-    },
-    {
-      id: 2,
-      date: 'Oct 15, 2024',
-      title: 'Understanding E-commerce Trends in Rwanda',
-      description: 'Stay updated with the latest trends in e-commerce and how they can benefit your shopping experience.',
-      imageUrl: '/assets/blog/blog2.jpeg'
-
-    },
-    {
-      id: 3,
-      date: 'Oct 22, 2024',
-      title: 'How to Choose the Right Products for Your Needs',
-      description: 'A guide to selecting products that best fit your lifestyle and budget while shopping online.',
-      imageUrl: '/assets/blog/blog3.jpeg'
-
-    }
-  ];
-
-  // Slider settings
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: true
-        }
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1
-        }
-      }
-    ]
-  };
-
+ 
   return (
     <section className="py-24"id="blog">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

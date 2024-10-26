@@ -5,7 +5,7 @@ import "slick-carousel/slick/slick-theme.css"; // Slick Theme CSS
 import { Link } from "react-router-dom"; // Assuming you're using react-router-dom for linking
 import Skeleton from "react-loading-skeleton"; // Import Skeleton loader
 import "react-loading-skeleton/dist/skeleton.css"; // Import skeleton styles
-
+import {categorySettings as settings} from '../utils/slickSettings'
 export default function Categories() {
   const [categories, setCategories] = useState([]);
 
@@ -29,32 +29,6 @@ export default function Categories() {
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
-
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 3, // Show 3 categories at a time
-    slidesToScroll: 1,
-    autoplay: true, // Enable autoplay
-    autoplaySpeed: 3000, // Set autoplay speed to 3 seconds
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2, // Show 2 items on medium screens
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 600,
-        settings: {
-          slidesToShow: 1, // Show 1 item on small screens
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
 
   if (categories.length === 0) {
     return (

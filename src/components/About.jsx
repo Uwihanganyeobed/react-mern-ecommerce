@@ -1,11 +1,7 @@
 import React from 'react';
-
+import {aboutStats as stats} from "../utils/items"
 const About = () => {
-  const stats = [
-    { value: "5+", label: "Years in E-commerce" },
-    { value: "200+", label: "Products Offered" },
-    { value: "1000+", label: "Satisfied Customers" }
-  ];
+  
 
   return (
     <section className="py-24 relative"id='about'>

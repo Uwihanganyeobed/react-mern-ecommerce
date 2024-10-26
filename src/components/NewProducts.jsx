@@ -5,7 +5,7 @@ import 'slick-carousel/slick/slick-theme.css';
 import Skeleton from 'react-loading-skeleton'; // Import Skeleton loader
 import 'react-loading-skeleton/dist/skeleton.css'; // Import skeleton styles
 import { Link } from 'react-router-dom';
-
+import {newSettings as settings} from '../utils/slickSettings'
 const NewProducts = () => {
   const [newProducts, setNewProducts] = useState([]);
 
@@ -23,32 +23,6 @@ const NewProducts = () => {
       })
       .catch(error => console.error("Error fetching data:", error));
   }, []);
-
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 4, // Show 4 cards at a time
-    slidesToScroll: 4, // Scroll through 4 cards at a time
-    autoplay: true, // Enable autoplay
-    autoplaySpeed: 3000, // Set autoplay speed to 3 seconds
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: 2, // Show 2 cards on medium screens
-          slidesToScroll: 2,
-        },
-      },
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: 1, // Show 1 card on small screens
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
 
   if (newProducts.length === 0) {
     return (

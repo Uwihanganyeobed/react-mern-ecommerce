@@ -3,9 +3,7 @@ import { StarIcon } from "@heroicons/react/20/solid";
 import { Radio, RadioGroup } from "@headlessui/react";
 import { Link, useParams } from "react-router-dom"; // useParams to get the product ID from URL
 import RelatedProducts from "../components/RelatedProducts"
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+
 
 export default function Monoproduct() {
   const [product, setProduct] = useState(null); // Set product to null initially
@@ -266,4 +264,8 @@ export default function Monoproduct() {
       <RelatedProducts id={product._id} />
     </div>
   );
+}
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
 }

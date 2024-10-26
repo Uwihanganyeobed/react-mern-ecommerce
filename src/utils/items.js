@@ -1,4 +1,29 @@
 
+export const blogs = [
+  {
+    id: 1,
+    date: 'Oct 01, 2024',
+    title: 'Top 5 Tips for Successful Online Shopping in Kigali',
+    description: 'Learn how to navigate online shopping platforms effectively and make informed purchases.',
+    imageUrl: '/assets/blog/blog1.jpeg'
+  },
+  {
+    id: 2,
+    date: 'Oct 15, 2024',
+    title: 'Understanding E-commerce Trends in Rwanda',
+    description: 'Stay updated with the latest trends in e-commerce and how they can benefit your shopping experience.',
+    imageUrl: '/assets/blog/blog2.jpeg'
+
+  },
+  {
+    id: 3,
+    date: 'Oct 22, 2024',
+    title: 'How to Choose the Right Products for Your Needs',
+    description: 'A guide to selecting products that best fit your lifestyle and budget while shopping online.',
+    imageUrl: '/assets/blog/blog3.jpeg'
+
+  }
+];
 
 export const navigation = {
   categories: [
@@ -59,57 +84,9 @@ export const countires = [
     name: "UK",
   },
 ];
-export const monoProducts = {
-  name: 'Basic Tee 6-Pack',
-  price: '$192',
-  href: '#',
-  breadcrumbs: [
-    { id: 1, name: 'Men', href: '#' },
-    { id: 2, name: 'Clothing', href: '#' },
-  ],
-  images: [
-    {
-      src: 'https://tailwindui.com/plus/img/ecommerce-images/product-page-02-secondary-product-shot.jpg',
-      alt: 'Two each of gray, white, and black shirts laying flat.',
-    },
-    {
-      src: 'https://tailwindui.com/plus/img/ecommerce-images/product-page-02-tertiary-product-shot-01.jpg',
-      alt: 'Model wearing plain black basic tee.',
-    },
-    {
-      src: 'https://tailwindui.com/plus/img/ecommerce-images/product-page-02-tertiary-product-shot-02.jpg',
-      alt: 'Model wearing plain gray basic tee.',
-    },
-    {
-      src: 'https://tailwindui.com/plus/img/ecommerce-images/product-page-02-featured-product-shot.jpg',
-      alt: 'Model wearing plain white basic tee.',
-    },
-  ],
-  colors: [
-    { name: 'White', class: 'bg-white', selectedClass: 'ring-gray-400' },
-    { name: 'Gray', class: 'bg-gray-200', selectedClass: 'ring-gray-400' },
-    { name: 'Black', class: 'bg-gray-900', selectedClass: 'ring-gray-900' },
-  ],
-  sizes: [
-    { name: 'XXS', inStock: false },
-    { name: 'XS', inStock: true },
-    { name: 'S', inStock: true },
-    { name: 'M', inStock: true },
-    { name: 'L', inStock: true },
-    { name: 'XL', inStock: true },
-    { name: '2XL', inStock: true },
-    { name: '3XL', inStock: true },
-  ],
-  description:
-    'The Basic Tee 6-Pack allows you to fully express your vibrant personality with three grayscale options. Feeling adventurous? Put on a heather gray tee. Want to be a trendsetter? Try our exclusive colorway: "Black". Need to add an extra pop of color to your outfit? Our white tee has you covered.',
-  highlights: [
-    'Hand cut and sewn locally',
-    'Dyed with our proprietary colors',
-    'Pre-washed & pre-shrunk',
-    'Ultra-soft 100% cotton',
-  ],
-  details:
-    'The 6-Pack includes two black, two white, and two heather gray Basic Tees. Sign up for our subscription service and be the first to get new, exciting colors, like our upcoming "Charcoal Gray" limited release.',
-}
-export const monoReviews = { href: '#', average: 4, totalCount: 117 }
 
+export const aboutStats = [
+  { value: "5+", label: "Years in E-commerce" },
+  { value: "200+", label: "Products Offered" },
+  { value: "1000+", label: "Satisfied Customers" }
+];

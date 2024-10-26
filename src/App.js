@@ -17,6 +17,8 @@ import Blog from "./components/Blog";
 import NewProducts from "./components/NewProducts";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
+import Login from "./auth/Login";
+import Register from "./auth/Register";
 
 export default function App() {
   return (
@@ -28,8 +30,8 @@ export default function App() {
             <Route path="/" element={<Main />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="/login" element={<Form type="login" />} />
-            <Route path="/register" element={<Form type="register" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/:id" element={<MonoProduct />} />
             <Route path="/blog/:id" element={<MonoProduct />} />
             <Route path="/featured/:id" element={<MonoProduct />} />
