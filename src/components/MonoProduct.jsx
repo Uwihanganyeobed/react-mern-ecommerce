@@ -32,10 +32,16 @@ export default function Monoproduct() {
     return <div>Loading...</div>; // Display loading state while fetching
   }
 
-  const handleAddToCart = ()=>{
-    const selectedProduct = {...product, color: selectedColor.name, size: selectedSize.name};
+  const handleAddToCart = () => {
+    const selectedProduct = {
+      ...product,
+      id: product._id, // Ensure you have a unique identifier for the product
+      ...(selectedColor && { color: selectedColor.name }), // Add color only if selected
+      ...(selectedSize && { size: selectedSize.name }),   // Add size only if selected
+      quantity: 1 // You can set a default quantity or use a state variable for this
+    };
     addCartItem(selectedProduct);
-  }
+  };
   const reviews = {
     average: product.rating,
     totalCount: 117, // Static for now

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { formSchema } from "../utils/validations";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { AuthContext } from "../context/authContext";
 
-export default function Form({ type, onLoginStatusChange }) {
+export default function Form({ type }) {
   const navigate = useNavigate();
   const isLogin = type === "login";
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export default function Form({ type, onLoginStatusChange }) {
     role: isLogin ? undefined : "User",
   });
   const [errors, setErrors] = useState({});
+  const { login } = useContext(AuthContext); // Use the login method from AuthContext
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,14 +44,15 @@ export default function Form({ type, onLoginStatusChange }) {
       const data = await response.json();
       if (data.success) {
         toast.success(isLogin ? 'Welcome 😃 again!' : "Successfully signed up!");
-  
+
         if (data.token) {
-          localStorage.setItem("authToken", data.token); // Store token
-  
-          // Fetch user data using the token
+          // Store token and username using the login method from context
+          login(data.token, formData.name);
+
+          // Fetch user data if necessary
           const decodedToken = JSON.parse(atob(data.token.split('.')[1])); // Decode JWT to get user ID
           const userId = decodedToken.id;
-  
+
           // Fetch user details
           const userResponse = await fetch(`http://localhost:5000/users/${userId}`, {
             method: "GET",
@@ -60,17 +63,14 @@ export default function Form({ type, onLoginStatusChange }) {
           const userData = await userResponse.json();
   
           if (userData && userData.name) {
-            localStorage.setItem("userName", userData.name); // Store username in localStorage
+            login(data.token, userData.name); // Store username in context
           }
   
-          onLoginStatusChange(true); // Notify parent component of login
+          navigate("/"); // Redirect after success
         }
-  
-        navigate("/"); // Redirect after success
       } else {
         setErrors({ general: data.error });
       }
-      setErrors({});
     } catch (error) {
       if (error instanceof z.ZodError) {
         const fieldErrors = error.errors.reduce((acc, err) => {
@@ -81,6 +81,7 @@ export default function Form({ type, onLoginStatusChange }) {
       }
     }
   };
+  
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8" id="form">

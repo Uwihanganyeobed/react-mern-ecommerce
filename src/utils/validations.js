@@ -27,27 +27,22 @@ export const formSchema = (type) => {
   });
 };
 
-
-// import { z } from "zod";
-
-// // Define your validation schema with Zod
-// export const formSchema = z.object({
-//   name: z.string().nonempty("Name is required").optional(), // Optional for login, required for sign-up
-//   email: z.string().email("Invalid email format"),
-//   password: z.string().min(6, "Password must be at least 6 characters long"),
-//   confirmPassword: z.string().optional(),
-//   phone: z.string().nonempty("Phone number is required").optional(), // Optional for login
-//   role: z.string().optional(), // Optional if not required
-// }).refine((data) => data.password === data.confirmPassword, {
-//   message: "Passwords must match",
-//   path: ["confirmPassword"], // This points to the confirmPassword field
-// });
-
-// // Adjust schema for login (without confirmPassword and phone)
-// export const loginSchema = z.object({
-//   email: z.string().email("Invalid email format"),
-//   password: z.string().min(6, "Password must be at least 6 characters long"),
-// });
-
-// // Schema for registration (keeps confirmPassword and phone)
-// export const registerSchema = formSchema;
+// Define Zod schema for checkout validation
+export const checkoutSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  firstName: z.string().nonempty("First name is required"),
+  lastName: z.string().nonempty("Last name is required"),
+  company: z.string().optional(),
+  address: z.string().nonempty("Address is required"),
+  city: z.string().nonempty("City is required"),
+  country: z.string().nonempty("Country is required"),
+  state: z.string().nonempty("State/Province is required"),
+  postalCode: z.string().nonempty("Postal code is required"),
+  phone: z.string().nonempty("Phone number is required"),
+  deliveryMethod: z.string().nonempty("Delivery method is required"),
+  paymentMethod: z.string().nonempty("Payment method is required"),
+  cardNumber: z.string().nonempty("Card number is required"),
+  cardName: z.string().nonempty("Name on card is required"),
+  expirationDate: z.string().nonempty("Expiration date is required"),
+  cvc: z.string().nonempty("CVC is required"),
+});

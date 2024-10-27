@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { Dialog } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -7,34 +7,32 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Correct named import
 import { navigation } from "../utils/items";
+import { AuthContext } from "../context/authContext";
+import { useCart } from "../context/itemsContext";
 
-export default function Navbar({ isLoggedIn, onLoginStatusChange }) {
+export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [userName, setUserName] = useState("");
-
-  useEffect(() => {
-    const storedUserName = localStorage.getItem("userName");
-    if (storedUserName) {
-      setUserName(storedUserName);
-    }
-  }, [isLoggedIn]);
+  const { isLoggedIn, userName, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { cartItems } = useCart();
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userName"); // Clear username on logout
-    onLoginStatusChange(false); // Notify parent component of logout
-    setUserName(""); // Clear user name state
+    logout();
+    navigate("/login");
   };
-
 
   return (
     <header className="bg-white text-semibold text-xl" id="home">
       {/* Announcement bar */}
       <div className="bg-indigo-600 text-white text-center py-2">
-        Get free delivery on orders over $100 
-        {isLoggedIn && <strong className="text-lg ml-10 text-yellow-300"> Welcome {userName}</strong>}
+        Get free delivery on orders over $100
+        {isLoggedIn && (
+          <strong className="text-lg ml-10 text-yellow-300">
+            {" "}
+            Welcome {userName}
+          </strong>
+        )}
       </div>
 
       {/* Mobile menu */}
@@ -100,10 +98,14 @@ export default function Navbar({ isLoggedIn, onLoginStatusChange }) {
 
             {/* Cart Icon */}
             <Link className="mt-4 flex items-center justify-between" to="/cart">
-              <span className="text-sm font-medium text-gray-700">Cart (0)</span>
+              <span className="text-sm font-medium text-gray-700">
+                Cart ({cartItems.length})
+              </span>
               <div className="relative">
                 <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 bg-red-600 text-white text-xs font-bold rounded-full">0</span>
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 bg-red-600 text-white text-xs font-bold rounded-full">
+                  {cartItems.length}
+                </span>
               </div>
             </Link>
           </Dialog.Panel>
@@ -114,7 +116,10 @@ export default function Navbar({ isLoggedIn, onLoginStatusChange }) {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 border-b border-gray-200">
           {/* Mobile menu button */}
-          <button onClick={() => setOpen(true)} className="lg:hidden p-2 text-gray-400">
+          <button
+            onClick={() => setOpen(true)}
+            className="lg:hidden p-2 text-gray-400"
+          >
             <Bars3Icon className="h-6 w-6" />
           </button>
 
@@ -147,7 +152,10 @@ export default function Navbar({ isLoggedIn, onLoginStatusChange }) {
                 placeholder="Search for a Product"
                 className="w-full border border-gray-300 rounded-l-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-lg"
               />
-              <button type="submit" className="px-4 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700">
+              <button
+                type="submit"
+                className="px-4 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700"
+              >
                 <MagnifyingGlassIcon className="h-5 w-5" />
               </button>
             </div>
@@ -156,9 +164,19 @@ export default function Navbar({ isLoggedIn, onLoginStatusChange }) {
           {/* Right-side Controls (Desktop Only) */}
           <div className="hidden lg:flex items-center space-x-4 ml-auto">
             {isLoggedIn ? (
-              <button onClick={handleLogout} className="text-lg font-medium text-gray700 hover:text-red600">Logout</button>
+              <button
+                onClick={handleLogout}
+                className="text-lg font-medium text-gray700 hover:text-red600"
+              >
+                Logout
+              </button>
             ) : (
-              <Link to="/login" className="text-lg font-medium text-gray700 hover:text-blue600">Account</Link>
+              <Link
+                to="/login"
+                className="text-lg font-medium text-gray700 hover:text-blue600"
+              >
+                Account
+              </Link>
             )}
             <span className="h6 w-px bg-gray200" aria-hidden="true" />
 
@@ -166,18 +184,32 @@ export default function Navbar({ isLoggedIn, onLoginStatusChange }) {
             <div className="inline-flex items-center">
               <select className="border border-gray300 rounded-md text-sm font-medium text-gray700 focus:border-indigo500 focus:ring-indigo500 py2">
                 <option value="CAD" className="flex items-center">
-                  <img src="https://flagcdn.com/ca.svg" alt="Canada Flag" className="h4 w-auto mr1"/> CAD
+                  <img
+                    src="https://flagcdn.com/ca.svg"
+                    alt="Canada Flag"
+                    className="h4 w-auto mr1"
+                  />{" "}
+                  CAD
                 </option>
                 <option value="USD" className="flex items-center">
-                  <img src="https://flagcdn.com/us.svg" alt="USA Flag" className="h4 w-auto mr1"/> USD
+                  <img
+                    src="https://flagcdn.com/us.svg"
+                    alt="USA Flag"
+                    className="h4 w-auto mr1"
+                  />{" "}
+                  USD
                 </option>
               </select>
             </div>
 
             {/* Cart Icon (Desktop Only) */}
-            <Link className="flex items-center ml-auto cursor-pointer" to="/cart">
-              <ShoppingBagIcon className="h6 w6 text-gray400"/>
-              <span className="ml2 text-sm font-medium text-gray700">0</span>
+            <Link className="flex items-center" to="/cart">
+              <div className="relative">
+                <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 bg-red-600 text-white text-xs font-bold rounded-full">
+                  {cartItems.length}
+                </span>
+              </div>
             </Link>
           </div>
         </div>

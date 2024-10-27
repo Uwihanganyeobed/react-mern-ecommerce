@@ -17,41 +17,31 @@ import Blog from "./components/Blog";
 import NewProducts from "./components/NewProducts";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // Import the CSS
+import ProtectedRoute from "./auth/protectedRoute";
+import { AuthProvider } from "./context/authContext";
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      // Optionally verify token here or just set logged in state
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  const handleLoginStatusChange = (status) => {
-    setIsLoggedIn(status);
-  };
 
 
   return (
+    <AuthProvider>
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
-        <Navbar isLoggedIn={isLoggedIn} onLoginStatusChange={handleLoginStatusChange} />
+        <Navbar  />
         <div className="flex flex-col flex-grow">
           <Routes>
             <Route path="/" element={<Main />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/register" element={<Form type='signup' onLoginStatusChange={handleLoginStatusChange} />} />
-            <Route path="/login" element={<Form type='login' onLoginStatusChange={handleLoginStatusChange} />} />
+            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/register" element={<Form type='signup' />} />
+            <Route path="/login" element={<Form type='login' />} />
             <Route path="/:id" element={<MonoProduct />} />
             <Route path="/blog/:id" element={<MonoProduct />} />
             <Route path="/featured/:id" element={<MonoProduct />} />
             <Route path="/new/:id" element={<MonoProduct />} />
             <Route path="/category/:id" element={<MonoProduct />} />
             <Route path="/one" element={<Reviews />} />
-            <Route path="/order" element={<OrderHistroy />} />
+            <Route path="/order" element={<ProtectedRoute><OrderHistroy /></ProtectedRoute>} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/blog" element={<Blog />} />
@@ -61,6 +51,7 @@ export default function App() {
         <ToastContainer /> {/* ToastContainer for displaying toasts */}
       </div>
     </BrowserRouter>
+    </AuthProvider>
   );
 }
 
