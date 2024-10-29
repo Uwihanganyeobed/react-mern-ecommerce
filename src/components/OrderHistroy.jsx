@@ -61,7 +61,7 @@ const OrderHistory = () => {
                     <div className="flex max-lg:flex-col items-center gap-8 lg:gap-24 px-3 md:px-11">
                       <div className="grid grid-cols-4 w-full">
                         <div className="col-span-4 sm:col-span-1">
-                          <img src={itemData.imageUrl} alt={itemData.title} className="max-sm:mx-auto object-cover" />
+                          <img src={itemData.image} alt={itemData.title} className="max-sm:mx-auto object-cover" />
                         </div>
                         <div className="col-span-4 sm:col-span-3 max-sm:mt-4 sm:pl-8 flex flex-col justify-center max-sm:items-center">
                           <h6 className="font-manrope font-semibold text-2xl leading-9 text-black mb-3 whitespace-nowrap">{itemData.title}</h6>
