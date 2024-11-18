@@ -16,7 +16,7 @@ export default function Featured() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/products/');
+        const response = await axios.get('https://react-mern-back-end.onrender.com/products/');
         const featured = response.data.filter(product => product.is_featured); // Filter featured products based on `is_featured`
         setFeaturedProducts(featured);
       } catch (error) {

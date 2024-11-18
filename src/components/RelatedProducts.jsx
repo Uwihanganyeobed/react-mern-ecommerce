@@ -10,7 +10,7 @@ const RelatedProducts = ({ id }) => {
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/products/${id}/related/`)
+    fetch(`https://react-mern-back-end.onrender.com/products/${id}/related/`)
       .then(response => response.json())
       .then(data => {
         // Remove duplicates based on the product ID

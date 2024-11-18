@@ -16,7 +16,7 @@ export default function Monoproduct() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const response = await fetch(`http://localhost:5000/products/${id}`); // Use the product ID to fetch data
+        const response = await fetch(`https://react-mern-back-end.onrender.com/products/${id}`); // Use the product ID to fetch data
         const data = await response.json();
         setProduct(data); // Set the fetched product
         setSelectedColor(data.colors[0]); // Set default selected color

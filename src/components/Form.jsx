@@ -33,7 +33,7 @@ export default function Form({ type }) {
       const schema = formSchema(type);
       schema.parse(formData);
   
-      const response = await fetch(`http://localhost:5000/auth/${isLogin ? "login" : "signup"}`, {
+      const response = await fetch(`https://react-mern-back-end.onrender.com/auth/${isLogin ? "login" : "signup"}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ export default function Form({ type }) {
           const userId = decodedToken.id;
 
           // Fetch user details
-          const userResponse = await fetch(`http://localhost:5000/users/${userId}`, {
+          const userResponse = await fetch(`https://react-mern-back-end.onrender.com/users/${userId}`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${data.token}`,

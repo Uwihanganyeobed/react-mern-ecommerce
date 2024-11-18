@@ -16,7 +16,7 @@ export default function Headings() {
     // Fetch products from the backend
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/products/");
+        const response = await axios.get("https://react-mern-back-end.onrender.com/products/");
         // Filter products by category 'logo-admin'
         const filteredProducts = response.data.filter(
           (product) => product.category === "automotive"

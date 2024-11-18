@@ -11,7 +11,7 @@ const NewProducts = () => {
 
   useEffect(() => {
     // Fetch the backend data (replace with your actual backend API endpoint)
-    fetch("http://localhost:5000/products")
+    fetch("https://react-mern-back-end.onrender.com/products")
       .then(response => response.json())
       .then(data => {
         // Filter the products to include only new items and exclude 'logo-admin'
