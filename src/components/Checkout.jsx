@@ -6,23 +6,24 @@ import { useCart } from "../context/itemsContext";
 import { useState } from "react";
 import { useOrders } from "../context/ordersContext";
 import { useNavigate } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 
 export default function Checkout() {
   const { cartItems, getCartTotal } = useCart();
   const { addOrder } = useOrders();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  
+
   const handlePlaceOrder = async () => {
     setLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate payment
-  
+
     const order = {
       id: `#${Math.floor(Math.random() * 1000000)}`,
       paymentDate: new Date().toLocaleString(),
       items: cartItems,
     };
-  
+
     addOrder(order);
     setLoading(false);
     navigate("/order"); // Redirects user to order page
@@ -441,7 +442,13 @@ export default function Checkout() {
                   type="button"
                   className="w-full bg-indigo-600 text-white py-3 rounded-lg mt-6 hover:bg-indigo-700 transition duration-150 ease-in-out"
                 >
-                  {loading ? "Processing..." : "Place Order"}
+                  {loading ? (
+                    <div className="flex justify-center items-center">
+                      <ClipLoader aria-label="Loading..." color="orangered" />
+                    </div>
+                  ) : (
+                    "Place Order"
+                  )}
                 </button>
               </div>
             </div>

@@ -4,7 +4,7 @@ import { Radio, RadioGroup } from "@headlessui/react";
 import { Link, useParams } from "react-router-dom"; // useParams to get the product ID from URL
 import RelatedProducts from "../components/RelatedProducts";
 import { useCart } from "../context/itemsContext";
-
+import { ClipLoader } from 'react-spinners';
 export default function Monoproduct() {
   const [product, setProduct] = useState(null); // Set product to null initially
   const [selectedColor, setSelectedColor] = useState(null); // Color from backend
@@ -29,7 +29,11 @@ export default function Monoproduct() {
   }, [id]);
 
   if (!product) {
-    return <div>Loading...</div>; // Display loading state while fetching
+    return (
+      <div className="flex justify-center items-center h-screen">
+      <ClipLoader aria-label="Loading..."color="blue" />
+    </div>
+    ) // Display loading state while fetching
   }
 
   const handleAddToCart = () => {

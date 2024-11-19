@@ -46,3 +46,12 @@ export const checkoutSchema = z.object({
   expirationDate: z.string().nonempty("Expiration date is required"),
   cvc: z.string().nonempty("CVC is required"),
 });
+
+export const contactSchema = z.object({
+  name: z.string().nonempty("Name is required"),
+  email: z.string().email("Invalid email format"),
+  phone: z.string()
+    .nonempty("Phone number is required")
+    .regex(/^\+250\d{9}$/, "Phone number must start with +250 and be 12 digits"),
+  message: z.string().nonempty("Message is required")
+});
