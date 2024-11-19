@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import { z } from 'zod';
 import { contactSchema } from '../utils/validations';
 
@@ -47,7 +47,7 @@ const Contact = () => {
     
     if (validateForm()) {
       try {
-        const response = await axios.post('/api/contact', formData);
+        // const response = await axios.post('/api/contact', formData);
         
         setSubmitStatus('Message sent successfully!');
         // Reset form after successful submission
