@@ -10,12 +10,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
 import { AuthContext } from "../context/authContext";
 import { useCart } from "../context/itemsContext";
+import { useSearch } from "../context/searchContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { isLoggedIn, userName, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { searchProducts } = useSearch();
   const { cartItems } = useCart();
+
+  const handleSearch = (e) => {
+    searchProducts(e.target.value); // Trigger search on input change
+  };
 
   const handleLogout = () => {
     logout();
@@ -64,17 +70,19 @@ export default function Navbar() {
 
             {/* Search Bar */}
             <div className="mt-4 flex items-center">
-              <input
-                type="text"
-                placeholder="Search for a Product"
-                className="flex-grow border border-gray-300 rounded-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-              <button
-                type="submit"
-                className="ml-2 p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                <MagnifyingGlassIcon className="h-6 w-6" />
-              </button>
+ 
+                <input
+                  type="text"
+                  onChange={handleSearch}
+                  placeholder="Search for a Product"
+                  className="flex-grow border border-gray-300 rounded-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+                <button
+                  type="submit"
+                  className="ml-2 p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                >
+                  <MagnifyingGlassIcon className="h-6 w-6" />
+                </button>
             </div>
 
             {/* Account / Logout */}
@@ -149,6 +157,7 @@ export default function Navbar() {
             <div className="flex w-full">
               <input
                 type="text"
+                onChange={handleSearch}
                 placeholder="Search for a Product"
                 className="w-full border border-gray-300 rounded-l-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-lg"
               />

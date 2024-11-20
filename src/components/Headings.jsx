@@ -1,43 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import Skeleton from "react-loading-skeleton"; // Import Skeleton loader
 import "react-loading-skeleton/dist/skeleton.css"; // Import skeleton styles
+import { useSearch } from "../context/searchContext";
 
 export default function Headings() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [products, setProducts] = useState([]);
+  const { searchResults } = useSearch();
 
   const handleSlideChange = (index) => {
     setCurrentSlide(index);
   };
 
   useEffect(() => {
-    // Fetch products from the backend
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get("https://react-mern-back-end.onrender.com/products/");
-        // Filter products by category 'logo-admin'
-        const filteredProducts = response.data.filter(
-          (product) => product.category === "automotive"
-        );
-        setProducts(filteredProducts);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
+    if (searchResults.length > 0) {
+      setProducts(searchResults); // Use search results
+    } else {
+      // Fetch original data if no search results
+      fetchProducts();
+    }
+  }, [searchResults]);
 
-    fetchProducts();
-
-    const interval = setInterval(() => {
-      setCurrentSlide((prevSlide) =>
-        prevSlide === products.length - 1 ? 0 : prevSlide + 1
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(
+        "https://react-mern-back-end.onrender.com/products/category/automotive"
       );
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [products.length]);
-
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
   if (products.length === 0) {
     return (
       <div className="bg-white">

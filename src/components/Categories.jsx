@@ -5,43 +5,72 @@ import "slick-carousel/slick/slick-theme.css"; // Slick Theme CSS
 import { Link } from "react-router-dom"; // Assuming you're using react-router-dom for linking
 import Skeleton from "react-loading-skeleton"; // Import Skeleton loader
 import "react-loading-skeleton/dist/skeleton.css"; // Import skeleton styles
-import {categorySettings as settings} from '../utils/slickSettings'
+import axios from "axios"; // Import axios
+import { categorySettings as settings } from "../utils/slickSettings";
+import { useSearch } from "../context/searchContext";
+
 export default function Categories() {
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
+  const { searchResults } = useSearch();
 
+  // Fetch products from backend or update based on search results
   useEffect(() => {
-    // Fetch the backend data (replace with your actual backend API endpoint)
-    fetch("https://react-mern-back-end.onrender.com/products")
-      .then((response) => response.json())
-      .then((data) => {
-        // Group products by categories, exclude 'logo-admin', and pick only 1 product from each category
-        const uniqueCategories = [];
-        const seenCategories = new Set();
+    if (searchResults.length > 0) {
+      // Map search results into categories (if applicable)
+      const uniqueCategories = filterUniqueCategories(searchResults);
+      setCategories(uniqueCategories);
+      setLoading(false);
+    } else {
+      fetchProducts(); // Fetch original data if no search results
+    }
+  }, [searchResults]);
 
-        data.forEach((product) => {
-          if (product.category !== "logo-admin" && !seenCategories.has(product.category)) {
-            seenCategories.add(product.category);
-            uniqueCategories.push(product); // Add one product per category excluding 'logo-admin'
-          }
-        });
+  // Fetch products and filter by unique categories
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get(
+        "https://react-mern-back-end.onrender.com/products/"
+      );
+      const uniqueCategories = filterUniqueCategories(response.data);
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setCategories(uniqueCategories); // Set the filtered data
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
+  // Filter unique categories excluding 'logo-admin'
+  const filterUniqueCategories = (products) => {
+    const uniqueCategories = [];
+    const seenCategories = new Set();
 
-  if (categories.length === 0) {
+    products.forEach((product) => {
+      if (
+        product.category !== "logo-admin" &&
+        !seenCategories.has(product.category)
+      ) {
+        seenCategories.add(product.category);
+        uniqueCategories.push(product); // Add one product per category excluding 'logo-admin'
+      }
+    });
+
+    return uniqueCategories;
+  };
+
+  // Loading Skeleton
+  if (loading) {
     return (
       <div className="bg-gray-100">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:max-w-none lg:py-32">
             <h2 className="text-2xl font-bold text-gray-900">Shop by Categories</h2>
-            {/* Loading Skeletons */}
             <div className="mt-6 grid grid-cols-3 gap-x-4 gap-y-6 md:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div key={index} className="p-2">
                   <Skeleton height={200} className="rounded-lg mb-2" /> {/* Image Skeleton */}
-                  <Skeleton height={20} width={`80%`} /> {/* Category Skeleton */}
+                  <Skeleton height={20} width="80%" /> {/* Category Skeleton */}
                 </div>
               ))}
             </div>
@@ -52,7 +81,7 @@ export default function Categories() {
   }
 
   return (
-    <div className="bg-gray-100"id="categories">
+    <div className="bg-gray-100" id="categories">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:max-w-none lg:py-32">
           <h2 className="text-2xl font-bold text-gray-900">Shop by Categories</h2>

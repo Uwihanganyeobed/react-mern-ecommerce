@@ -7,13 +7,23 @@ import 'react-loading-skeleton/dist/skeleton.css'; // Import skeleton styles
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import {featuredSettings as settings} from '../utils/slickSettings'
+import { useSearch } from '../context/searchContext';
 
 export default function Featured() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true); // Add loading state
-
+  const { searchResults } = useSearch();
   // Fetch products from backend
   useEffect(() => {
+
+    if (searchResults.length > 0) {
+      setFeaturedProducts(searchResults); // Use search results
+    } else {
+      // Fetch original data if no search results
+      fetchProducts();
+    }
+  }, [searchResults]);
+
     const fetchProducts = async () => {
       try {
         const response = await axios.get('https://react-mern-back-end.onrender.com/products/');
@@ -25,8 +35,7 @@ export default function Featured() {
         setLoading(false); // Set loading to false after fetching
       }
     };
-    fetchProducts();
-  }, []);
+
 
   // Helper function to render rating stars
   const renderStars = (rating) => {
