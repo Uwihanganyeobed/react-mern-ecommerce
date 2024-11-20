@@ -2,25 +2,17 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Skeleton from "react-loading-skeleton"; // Import Skeleton loader
 import "react-loading-skeleton/dist/skeleton.css"; // Import skeleton styles
-import { useSearch } from "../context/searchContext";
 
 export default function Headings() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [products, setProducts] = useState([]);
-  const { searchResults } = useSearch();
 
   const handleSlideChange = (index) => {
     setCurrentSlide(index);
   };
 
   useEffect(() => {
-    if (searchResults.length > 0) {
-      setProducts(searchResults); // Use search results
-    } else {
-      // Fetch original data if no search results
-      fetchProducts();
-    }
-  }, [searchResults]);
+  
 
   const fetchProducts = async () => {
     try {
@@ -33,6 +25,8 @@ export default function Headings() {
       console.error("Error fetching products:", error);
     }
   };
+  fetchProducts();
+}, []);
   if (products.length === 0) {
     return (
       <div className="bg-white">

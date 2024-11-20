@@ -2,7 +2,6 @@ import React, { useState, useContext } from "react";
 import { Dialog } from "@headlessui/react";
 import {
   Bars3Icon,
-  MagnifyingGlassIcon,
   ShoppingBagIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -10,17 +9,49 @@ import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
 import { AuthContext } from "../context/authContext";
 import { useCart } from "../context/itemsContext";
-import { useSearch } from "../context/searchContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { isLoggedIn, userName, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { searchProducts } = useSearch();
+  const [query, setQuery] = useState(""); // Search query
+  const [suggestions, setSuggestions] = useState([]); // Suggestions array
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { cartItems } = useCart();
+  let debounceTimer;
 
-  const handleSearch = (e) => {
-    searchProducts(e.target.value); // Trigger search on input change
+  const handleSearchChange = (e) => {
+    const searchTerm = e.target.value;
+    setQuery(searchTerm);
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+      if (searchTerm.length > 2) {
+        try {
+          const response = await fetch(
+            `https://react-mern-back-end.onrender.com/products/search?q=${searchTerm}`
+          );
+          const data = await response.json();
+          setSuggestions(data);
+          setIsModalOpen(true);
+        } catch (error) {
+          console.error("Error fetching search suggestions:", error);
+        }
+      } else {
+        setSuggestions([]);
+        setIsModalOpen(false);
+      }
+    }, 300); // Wait 300ms before making the API call
+  };
+
+  const handleSuggestionClick = (productId) => {
+    setIsModalOpen(false); // Close modal
+    navigate(`/${productId}`); // Navigate to product details page
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setIsModalOpen(false);
+    navigate(`/search?q=${query}`); // Navigate to the search results page
   };
 
   const handleLogout = () => {
@@ -36,7 +67,7 @@ export default function Navbar() {
         {isLoggedIn && (
           <strong className="text-lg ml-10 text-yellow-300">
             {" "}
-            Welcome {userName}
+            Welcome {userName}{" "}
           </strong>
         )}
       </div>
@@ -67,24 +98,44 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
-
-            {/* Search Bar */}
-            <div className="mt-4 flex items-center">
- 
-                <input
-                  type="text"
-                  onChange={handleSearch}
-                  placeholder="Search for a Product"
-                  className="flex-grow border border-gray-300 rounded-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
-                <button
-                  type="submit"
-                  className="ml-2 p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                  <MagnifyingGlassIcon className="h-6 w-6" />
-                </button>
-            </div>
-
+            <form
+              onSubmit={handleSearchSubmit}
+              className="relative flex w-full"
+            >
+              <input
+                type="text"
+                value={query}
+                onChange={handleSearchChange}
+                placeholder="Search for products..."
+                className="flex-grow px-2 py-1 border rounded-l-lg text-lg" // Increased size and rounded left corners
+              />
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-2 py-2 rounded-r-lg text-lg hover:bg-blue-700" // Added button styling
+              >
+                Search
+              </button>
+              {/* Suggestions Modal */}
+              {isModalOpen && (
+                <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg w-full z-10">
+                  {suggestions.length > 0 ? (
+                    suggestions.map((item) => (
+                      <div
+                        key={item._id}
+                        onClick={() => handleSuggestionClick(item._id)}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        {item.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500">
+                      No suggestions found
+                    </div>
+                  )}
+                </div>
+              )}
+            </form>
             {/* Account / Logout */}
             <div className="mt-4">
               {isLoggedIn ? (
@@ -153,23 +204,46 @@ export default function Navbar() {
           </div>
 
           {/* Search Bar (Desktop Only) */}
-          <div className="hidden lg:flex lg:flex-grow lg:max-w-lg lg:justify-center mx-auto">
-            <div className="flex w-full">
+          <div className="hidden md:flex items-center w-1/2 lg:w-2/5 xl:w-1/3">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="relative flex w-full"
+            >
               <input
                 type="text"
-                onChange={handleSearch}
-                placeholder="Search for a Product"
-                className="w-full border border-gray-300 rounded-l-md py-2 pl-3 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-lg"
+                value={query}
+                onChange={handleSearchChange}
+                placeholder="Search for products..."
+                className="flex-grow px-4 py-2 border rounded-l-lg text-lg" // Increased size and rounded left corners
               />
               <button
                 type="submit"
-                className="px-4 bg-indigo-600 text-white rounded-r-md hover:bg-indigo-700"
+                className="bg-blue-600 text-white px-4 py-2 rounded-r-lg text-lg hover:bg-blue-700" // Added button styling
               >
-                <MagnifyingGlassIcon className="h-5 w-5" />
+                Search
               </button>
-            </div>
+              {/* Suggestions Modal */}
+              {isModalOpen && (
+                <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg w-full z-10">
+                  {suggestions.length > 0 ? (
+                    suggestions.map((item) => (
+                      <div
+                        key={item._id}
+                        onClick={() => handleSuggestionClick(item._id)}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        {item.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-2 text-gray-500">
+                      No suggestions found
+                    </div>
+                  )}
+                </div>
+              )}
+            </form>
           </div>
-
           {/* Right-side Controls (Desktop Only) */}
           <div className="hidden lg:flex items-center space-x-4 ml-auto">
             {isLoggedIn ? (
@@ -187,39 +261,33 @@ export default function Navbar() {
                 Account
               </Link>
             )}
+
             <span className="h6 w-px bg-gray200" aria-hidden="true" />
 
-            {/* Currency Selector */}
-            <div className="inline-flex items-center">
-              <select className="border border-gray300 rounded-md text-sm font-medium text-gray700 focus:border-indigo500 focus:ring-indigo500 py2">
-                <option value="CAD" className="flex items-center">
-                  <img
-                    src="https://flagcdn.com/ca.svg"
-                    alt="Canada Flag"
-                    className="h4 w-auto mr1"
-                  />{" "}
-                  CAD
-                </option>
-                <option value="USD" className="flex items-center">
-                  <img
-                    src="https://flagcdn.com/us.svg"
-                    alt="USA Flag"
-                    className="h4 w-auto mr1"
-                  />{" "}
-                  USD
-                </option>
+            {/* Currency Selector and Cart Group */}
+            <div className="flex items-center space-x-6">
+              {/* Currency Selector */}
+              <select className="border border-gray-300 rounded-md text-sm font-medium text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2">
+                <option value="CAD">CAD</option>
+                <option value="USD">USD</option>
               </select>
-            </div>
 
-            {/* Cart Icon (Desktop Only) */}
-            <Link className="flex items-center" to="/cart">
-              <div className="relative">
-                <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 bg-red-600 text-white text-xs font-bold rounded-full">
-                  {cartItems.length}
-                </span>
-              </div>
-            </Link>
+              {/* Enhanced Cart Icon */}
+              <Link 
+                to="/cart" 
+                className="group -m-2 flex items-center p-2 relative"
+                aria-label="View cart"
+              >
+                <ShoppingBagIcon className="h-6 w-6 text-gray-600 group-hover:text-gray-800" />
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
+                    <span className="text-xs font-medium text-white">
+                      {cartItems.length}
+                    </span>
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
         </div>
       </nav>

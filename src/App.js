@@ -20,6 +20,7 @@ import "react-toastify/dist/ReactToastify.css"; // Import the CSS
 import ProtectedRoute from "./auth/protectedRoute";
 import { AuthProvider } from "./context/authContext";
 import { SearchProvider } from "./context/searchContext";
+import SearchResults from "./components/Searchresults";
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
                 <Route path="/new/:id" element={<MonoProduct />} />
                 <Route path="/category/:id" element={<MonoProduct />} />
                 <Route path="/one" element={<Reviews />} />
+                <Route path="/search" element={<SearchResults />} />
                 <Route
                   path="/order"
                   element={

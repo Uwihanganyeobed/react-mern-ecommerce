@@ -7,24 +7,14 @@ import Skeleton from "react-loading-skeleton"; // Import Skeleton loader
 import "react-loading-skeleton/dist/skeleton.css"; // Import skeleton styles
 import axios from "axios"; // Import axios
 import { categorySettings as settings } from "../utils/slickSettings";
-import { useSearch } from "../context/searchContext";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true); // Loading state
-  const { searchResults } = useSearch();
 
   // Fetch products from backend or update based on search results
   useEffect(() => {
-    if (searchResults.length > 0) {
-      // Map search results into categories (if applicable)
-      const uniqueCategories = filterUniqueCategories(searchResults);
-      setCategories(uniqueCategories);
-      setLoading(false);
-    } else {
-      fetchProducts(); // Fetch original data if no search results
-    }
-  }, [searchResults]);
+
 
   // Fetch products and filter by unique categories
   const fetchProducts = async () => {
@@ -40,7 +30,8 @@ export default function Categories() {
       setLoading(false);
     }
   };
-
+  fetchProducts();
+});
   // Filter unique categories excluding 'logo-admin'
   const filterUniqueCategories = (products) => {
     const uniqueCategories = [];

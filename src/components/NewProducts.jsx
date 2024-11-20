@@ -7,23 +7,14 @@ import "react-loading-skeleton/dist/skeleton.css";
 import { Link } from "react-router-dom";
 import { newSettings as settings } from "../utils/slickSettings";
 import axios from "axios";
-import { useSearch } from "../context/searchContext"; // Importing the search context
 
 const NewProducts = () => {
   const [newProducts, setNewProducts] = useState([]);
   const [loading, setLoading] = useState(true); // Loading state for skeletons
-  const { searchResults } = useSearch();
 
   // Fetch products from backend or use search results
   useEffect(() => {
-    if (searchResults.length > 0) {
-      setNewProducts(searchResults); // Use search results
-      setLoading(false); // Stop loading as data is available
-    } else {
-      fetchProducts(); // Fetch original data if no search results
-    }
-  }, [searchResults]);
-
+ 
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
@@ -40,7 +31,8 @@ const NewProducts = () => {
       setLoading(false); // Stop loading after fetching
     }
   };
-
+  fetchProducts();
+  });
   // Show skeleton loader while loading
   if (loading) {
     return (
