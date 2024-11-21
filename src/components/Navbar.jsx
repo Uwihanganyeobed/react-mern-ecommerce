@@ -218,7 +218,7 @@ export default function Navbar() {
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded-r-lg text-lg hover:bg-blue-700" // Added button styling
+                className="bg-blue-600 text-white px-1 py-2 rounded-r-lg text-lg hover:bg-blue-700" // Added button styling
               >
                 Search
               </button>
