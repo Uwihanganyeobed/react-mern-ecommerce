@@ -11,6 +11,7 @@ import { AuthContext } from "../context/authContext";
 import { useCart } from "../context/itemsContext";
 
 export default function Navbar() {
+
   const [open, setOpen] = useState(false);
   const { isLoggedIn, userName, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function Navbar() {
   const [suggestions, setSuggestions] = useState([]); // Suggestions array
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { cartItems } = useCart();
+  
   let debounceTimer;
 
   const handleSearchChange = (e) => {

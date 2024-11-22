@@ -55,3 +55,33 @@ export const contactSchema = z.object({
     .regex(/^\+250\d{9}$/, "Phone number must start with +250 and be 12 digits"),
   message: z.string().nonempty("Message is required")
 });
+
+// Add these new schemas
+export const billingSchema = z.object({
+  firstName: z.string().nonempty("First name is required"),
+  lastName: z.string().nonempty("Last name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string()
+    .nonempty("Phone number is required")
+    .regex(/^\+\d{1,4}\d{6,}$/, "Please enter a valid phone number"),
+  company: z.string().optional(),
+  address: z.string().nonempty("Address is required"),
+  city: z.string().nonempty("City is required"),
+  country: z.string().nonempty("Country is required"),
+  state: z.string().nonempty("State/Province is required"),
+  postalCode: z.string().nonempty("Postal code is required"),
+});
+
+export const shippingSchema = z.object({
+  firstName: z.string().nonempty("First name is required"),
+  lastName: z.string().nonempty("Last name is required"),
+  address: z.string().nonempty("Address is required"),
+  city: z.string().nonempty("City is required"),
+  country: z.string().nonempty("Country is required"),
+  state: z.string().nonempty("State/Province is required"),
+  postalCode: z.string().nonempty("Postal code is required"),
+  phone: z.string()
+    .nonempty("Phone number is required")
+    .regex(/^\+\d{1,4}\d{6,}$/, "Please enter a valid phone number"),
+  deliveryInstructions: z.string().optional(),
+});

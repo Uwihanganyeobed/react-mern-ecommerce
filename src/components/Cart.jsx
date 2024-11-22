@@ -73,6 +73,14 @@ export default function Cart() {
             <button onClick={clearCart} className="mt-6 text-indigo-600">
               Clear Cart
             </button>
+            
+            <div className="mt-4 flex justify-center space-x-5">
+              <img src="/assets/icons/visa.svg" alt="Visa" className="h-10" />
+              <img src="/assets/icons/mastercard.svg" alt="Mastercard" className="h-10" />
+              <img src="/assets/icons/amex.svg" alt="American Express" className="h-10" />
+              <img src="/assets/icons/paypal.svg" alt="PayPal" className="h-10" />
+            </div>
+
             <Link
               to="/checkout"
               className="mt-6 flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"

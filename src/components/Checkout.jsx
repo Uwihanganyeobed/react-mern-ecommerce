@@ -32,6 +32,7 @@ export default function Checkout() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
@@ -295,121 +296,139 @@ export default function Checkout() {
               </div>
 
               {/* Payment Method */}
-              <h2 className="text-lg font-semibold mb-4">Payment</h2>
-              <div className="bg-white p-6 rounded-lg shadow flex flex-row items-center justify-evenly mb-5">
-                <div className="mb-4">
-                  <label className="flex items-center">
+              <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
+              <div className="bg-white p-6 rounded-lg shadow mb-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Credit Card Option */}
+                  <label className="relative cursor-pointer">
                     <input
                       type="radio"
                       value="credit_card"
                       {...register("paymentMethod")}
-                      className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                      className="peer sr-only"
                     />
-                    <span className="ml-2">Credit card</span>
+                    <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
+                      <div className="flex flex-col items-center">
+                        <img src="/assets/icons/credit-card.svg" alt="Credit Card" className="h-12 mb-2" />
+                        <h3 className="font-semibold">Credit Card</h3>
+                        <div className="flex gap-2 mt-2">
+                          <img src="/assets/icons/visa.svg" alt="Visa" className="h-6" />
+                          <img src="/assets/icons/mastercard.svg" alt="Mastercard" className="h-6" />
+                          <img src="/assets/icons/amex.svg" alt="Amex" className="h-6" />
+                        </div>
+                      </div>
+                    </div>
                   </label>
-                </div>
-                <div className="mb-4">
-                  <label className="flex items-center">
+
+                  {/* PayPal Option */}
+                  <label className="relative cursor-pointer">
                     <input
                       type="radio"
                       value="paypal"
                       {...register("paymentMethod")}
-                      className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                      className="peer sr-only"
                     />
-                    <span className="ml-2">PayPal</span>
+                    <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
+                      <div className="flex flex-col items-center">
+                        <img src="/assets/icons/paypal.svg" alt="PayPal" className="h-12 mb-2" />
+                        <h3 className="font-semibold">PayPal</h3>
+                        <p className="text-sm text-gray-500 text-center mt-2">
+                          Pay with your PayPal account
+                        </p>
+                      </div>
+                    </div>
                   </label>
-                </div>
-                <div className="mb-4">
-                  <label className="flex items-center">
+
+                  {/* Apple/Google Pay Option */}
+                  <label className="relative cursor-pointer">
                     <input
                       type="radio"
-                      value="etransfer"
+                      value="digital_wallet"
                       {...register("paymentMethod")}
-                      className="form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                      className="peer sr-only"
                     />
-                    <span className="ml-2">eTransfer</span>
+                    <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
+                      <div className="flex flex-col items-center">
+                        <img src="/assets/icons/wallet.svg" alt="Digital Wallet" className="h-12 mb-2" />
+                        <h3 className="font-semibold">Digital Wallet</h3>
+                        <div className="flex gap-2 mt-2">
+                          <img src="/assets/icons/apple-pay.svg" alt="Apple Pay" className="h-10" />
+                          <img src="/assets/icons/google-pay.svg" alt="Google Pay" className="h-10" />
+                        </div>
+                      </div>
+                    </div>
                   </label>
                 </div>
-              </div>
 
-              <div>
-                <div className="mb-4">
-                  <label className="block text-lg font-medium text-gray-700 italic">
-                    Card number
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="example: 34388--900-00"
-                    className={`mt-1 block w-full px-3 py-2 border ${
-                      errors.cardNumber ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    {...register("cardNumber")}
-                  />
-                  {errors.cardNumber && (
-                    <p className="text-red-500 text-sm">
-                      {errors.cardNumber.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-lg italic font-medium text-gray-700">
-                    Name on card
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="example: cardName"
-                    className={`mt-1 block w-full px-3 py-2 border ${
-                      errors.cardName ? "border-red-500" : "border-gray-300"
-                    } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    {...register("cardName")}
-                  />
-                  {errors.cardName && (
-                    <p className="text-red-500 text-sm">
-                      {errors.cardName.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-lg italic font-medium text-gray-700">
-                      Expiration date (MM/YY)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      className={`mt-1 block w-full px-3 py-2 border ${
-                        errors.expirationDate
-                          ? "border-red-500"
-                          : "border-gray-300"
-                      } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("expirationDate")}
-                    />
-                    {errors.expirationDate && (
-                      <p className="text-red-500 text-sm">
-                        {errors.expirationDate.message}
-                      </p>
-                    )}
+                {/* Conditional rendering based on selected payment method */}
+                {watch("paymentMethod") === "credit_card" && (
+                  <div className="mt-6 space-y-4 border-t pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Card Number
+                        </label>
+                        <input
+                          type="text"
+                          {...register("cardNumber")}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="•••• •••• •••• ••••"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Name on Card
+                        </label>
+                        <input
+                          type="text"
+                          {...register("cardName")}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="John Doe"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Expiry Date
+                        </label>
+                        <input
+                          type="text"
+                          {...register("expirationDate")}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="MM/YY"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          CVC
+                        </label>
+                        <input
+                          type="text"
+                          {...register("cvc")}
+                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                          placeholder="•••"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-lg italic font-medium text-gray-700">
-                      CVC
-                    </label>
-                    <input
-                      type="text"
-                      className={`mt-1 block w-full px-3 py-2 border ${
-                        errors.cvc ? "border-red-500" : "border-gray-300"
-                      } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("cvc")}
-                    />
-                    {errors.cvc && (
-                      <p className="text-red-500 text-sm">
-                        {errors.cvc.message}
-                      </p>
-                    )}
+                )}
+
+                {watch("paymentMethod") === "paypal" && (
+                  <div className="mt-6 border-t pt-4">
+                    <p className="text-center text-gray-600">
+                      You will be redirected to PayPal to complete your payment securely.
+                    </p>
                   </div>
-                </div>
+                )}
+
+                {watch("paymentMethod") === "digital_wallet" && (
+                  <div className="mt-6 border-t pt-4">
+                    <p className="text-center text-gray-600">
+                      Choose your digital wallet payment method on the next step.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

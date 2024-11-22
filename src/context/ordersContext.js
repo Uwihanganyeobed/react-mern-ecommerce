@@ -1,33 +1,25 @@
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useContext, useState } from 'react';
 
-export const OrdersContext = createContext();
+const OrderContext = createContext();
 
-export const OrdersProvider = ({ children }) => {
+export function OrderProvider({ children }) {
   const [orders, setOrders] = useState([]);
 
   const addOrder = (order) => {
-    setOrders((prevOrders) => [...prevOrders, order]);
+    setOrders(prev => [...prev, order]);
   };
 
-  useEffect(() => {
-    const savedOrders = localStorage.getItem("orders");
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("orders", JSON.stringify(orders));
-  }, [orders]);
-
   return (
-    <OrdersContext.Provider value={{ orders, addOrder }}>
+    <OrderContext.Provider value={{ orders, addOrder }}>
       {children}
-    </OrdersContext.Provider>
+    </OrderContext.Provider>
   );
-};
-
-// Custom hook to use the Orders context
-export function useOrders() {
-  return useContext(OrdersContext);
 }
+
+export const useOrders = () => {
+  const context = useContext(OrderContext);
+  if (!context) {
+    throw new Error('useOrders must be used within an OrderProvider');
+  }
+  return context;
+};
