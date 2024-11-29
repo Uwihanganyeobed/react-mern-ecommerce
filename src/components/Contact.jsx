@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-// import axios from 'axios';
+import axios from 'axios';
 import { z } from 'zod';
 import { contactSchema } from '../utils/validations';
+import { toast } from 'react-toastify';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -47,18 +48,24 @@ const Contact = () => {
     
     if (validateForm()) {
       try {
-        // const response = await axios.post('/api/contact', formData);
+        const response = await axios.post('https://react-mern-back-end.onrender.com/feedback', formData);
         
-        setSubmitStatus('Message sent successfully!');
-        // Reset form after successful submission
-        setFormData({
-          name: '',
-          phone: '',
-          email: '',
-          message: ''
-        });
+        if (response.status === 201) {
+          toast.success(response.data.message);
+          setSubmitStatus('');  // Clear the status since we're using toast
+          // Reset form after successful submission
+          setFormData({
+            name: '',
+            phone: '',
+            email: '',
+            message: ''
+          });
+        } else {
+          toast.error(response.data.error || 'Failed to send message. Please try again.');
+        }
       } catch (error) {
-        setSubmitStatus('Failed to send message. Please try again.');
+        const errorMessage = error.response?.data?.error || 'Failed to send message. Please try again.';
+        toast.error(errorMessage);
         console.error('Submission error:', error);
       }
     }

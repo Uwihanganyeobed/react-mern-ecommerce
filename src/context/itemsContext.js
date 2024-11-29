@@ -1,11 +1,51 @@
 import { createContext, useState, useEffect, useContext } from "react";
+import { useAuth } from "./authContext";
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const { userName, isLoggedIn } = useAuth();
+
+  // Load cart items when user logs in
+  useEffect(() => {
+    const handleUserLogin = (event) => {
+      const { userName, cart } = event.detail;
+      if (cart) {
+        setCartItems(cart);
+      }
+    };
+
+    const handleUserLogout = () => {
+      // Save current cart before clearing
+      if (userName) {
+        localStorage.setItem(`cart_${userName}`, JSON.stringify(cartItems));
+      }
+      setCartItems([]);
+    };
+
+    window.addEventListener('userLogin', handleUserLogin);
+    window.addEventListener('userLogout', handleUserLogout);
+
+    return () => {
+      window.removeEventListener('userLogin', handleUserLogin);
+      window.removeEventListener('userLogout', handleUserLogout);
+    };
+  }, [userName, cartItems]);
+
+  // Save cart items whenever they change
+  useEffect(() => {
+    if (isLoggedIn && userName) {
+      localStorage.setItem(`cart_${userName}`, JSON.stringify(cartItems));
+    }
+  }, [cartItems, userName, isLoggedIn]);
 
   const addCartItem = (item, quantityChange = 1) => {
+    if (!isLoggedIn) {
+      console.warn('Please login to add items to cart');
+      return;
+    }
+
     const isInCart = cartItems.find((cartItem) => cartItem.id === item.id);
 
     if (isInCart) {
@@ -19,11 +59,9 @@ export const CartProvider = ({ children }) => {
           )
         );
       } else {
-        // If quantity becomes zero or less, remove the item
         removeFromCart(item.id);
       }
     } else {
-      // Add new item with quantity specified
       setCartItems([...cartItems, { ...item, quantity: Math.max(1, quantityChange) }]);
     }
   };
@@ -33,6 +71,9 @@ export const CartProvider = ({ children }) => {
   };
 
   const clearCart = () => {
+    if (userName) {
+      localStorage.removeItem(`cart_${userName}`);
+    }
     setCartItems([]);
   };
 
@@ -43,17 +84,6 @@ export const CartProvider = ({ children }) => {
   const getItemTotal = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
-
-  useEffect(() => {
-    const savedCartItems = localStorage.getItem("cartItems");
-    if (savedCartItems) {
-      setCartItems(JSON.parse(savedCartItems));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
-  }, [cartItems]);
 
   return (
     <CartContext.Provider
@@ -71,7 +101,6 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the Cart context
 export function useCart() {
    return useContext(CartContext);
 }

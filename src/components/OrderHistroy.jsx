@@ -1,14 +1,21 @@
 import React from 'react';
 import { useOrders } from '../context/ordersContext'; // Adjust the path if necessary
 import { useCart } from '../context/itemsContext';    // Adjust the path if necessary
+import { useNavigate } from 'react-router-dom';
 
 const OrderHistory = () => {
   const { orders } = useOrders();
   const { cartItems } = useCart();
+  const navigate = useNavigate();
 
   // Helper function to get full item data for each order item from the cart context
   const getItemData = (itemId) => {
     return cartItems.find(cartItem => cartItem.id === itemId) || {};
+  };
+
+  const handleBuyNow = (order) => {
+    // Add any order processing logic here
+    navigate('/success');
   };
 
   return (
@@ -44,7 +51,10 @@ const OrderHistory = () => {
                 </div>
                 <div className="flex items-center gap-3 max-md:mt-5">
                   <button className="rounded-full px-7 py-3 bg-white text-gray-900 border border-gray-300 font-semibold text-sm shadow-sm shadow-transparent transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-400">Show Invoice</button>
-                  <button className="rounded-full px-7 py-3 bg-indigo-600 shadow-sm shadow-transparent text-white font-semibold text-sm transition-all duration-500 hover:shadow-indigo-400 hover:bg-indigo-700" onClick={() => alert("Order Successfully made")}>
+                  <button 
+                    className="rounded-full px-7 py-3 bg-indigo-600 shadow-sm shadow-transparent text-white font-semibold text-sm transition-all duration-500 hover:shadow-indigo-400 hover:bg-indigo-700" 
+                    onClick={() => handleBuyNow(order)}
+                  >
                     Buy Now
                   </button>
                 </div>
