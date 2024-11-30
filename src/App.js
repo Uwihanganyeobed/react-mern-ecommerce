@@ -1,3 +1,4 @@
+// import './i18n/i18n';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import the CSS
 import { SearchProvider } from "./context/searchContext";

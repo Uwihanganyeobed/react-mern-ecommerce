@@ -14,7 +14,17 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handlePlaceOrder = async () => {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid },
+  } = useForm({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+  });
+
+  const handlePlaceOrder = async (data) => {
     setLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 3000)); // Simulate payment
 
@@ -29,20 +39,6 @@ export default function Checkout() {
     navigate("/order"); // Redirects user to order page
   };
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
-  });
-
-  const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-    // Handle the form submission, e.g., send data to API
-  };
-
   const total = getCartTotal();
   const shippingCost = 5.0; // Example shipping cost
   const tax = total * 0.1; // Example tax rate
@@ -54,7 +50,7 @@ export default function Checkout() {
       id="checkout"
     >
       <div className="container mx-auto p-6">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(handlePlaceOrder)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left side - Contact, Shipping, Delivery, Payment */}
             <div>
@@ -73,7 +69,7 @@ export default function Checkout() {
                     className={`mt-1 block w-full px-3 py-2 border ${
                       errors.email ? "border-red-500" : "border-gray-300"
                     } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    {...register("email")}
+                    {...register("email", { required: "Email is required" })}
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm">
@@ -99,7 +95,7 @@ export default function Checkout() {
                       className={`mt-1 block w-full px-3 py-2 border ${
                         errors.firstName ? "border-red-500" : "border-gray-300"
                       } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("firstName")}
+                      {...register("firstName", { required: "First name is required" })}
                     />
                     {errors.firstName && (
                       <p className="text-red-500 text-sm">
@@ -117,7 +113,7 @@ export default function Checkout() {
                       className={`mt-1 block w-full px-3 py-2 border ${
                         errors.lastName ? "border-red-500" : "border-gray-300"
                       } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("lastName")}
+                      {...register("lastName", { required: "Last name is required" })}
                     />
                     {errors.lastName && (
                       <p className="text-red-500 text-sm">
@@ -149,7 +145,7 @@ export default function Checkout() {
                     className={`mt-1 block w-full px-3 py-2 border ${
                       errors.address ? "border-red-500" : "border-gray-300"
                     } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    {...register("address")}
+                    {...register("address", { required: "Address is required" })}
                   />
                   {errors.address && (
                     <p className="text-red-500 text-sm">
@@ -169,7 +165,7 @@ export default function Checkout() {
                       className={`mt-1 block w-full px-3 py-2 border ${
                         errors.city ? "border-red-500" : "border-gray-300"
                       } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("city")}
+                      {...register("city", { required: "City is required" })}
                     />
                     {errors.city && (
                       <p className="text-red-500 text-sm">
@@ -185,7 +181,7 @@ export default function Checkout() {
                       className={`mt-1 block w-full px-3 py-2 border ${
                         errors.country ? "border-red-500" : "border-gray-300"
                       } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("country")}
+                      {...register("country", { required: "Country is required" })}
                     >
                       <option value="">Select a country</option>
                       {countires.map((country) => (
@@ -213,7 +209,7 @@ export default function Checkout() {
                       className={`mt-1 block w-full px-3 py-2 border ${
                         errors.state ? "border-red-500" : "border-gray-300"
                       } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("state")}
+                      {...register("state", { required: "State is required" })}
                     />
                     {errors.state && (
                       <p className="text-red-500 text-sm">
@@ -231,7 +227,7 @@ export default function Checkout() {
                       className={`mt-1 block w-full px-3 py-2 border ${
                         errors.postalCode ? "border-red-500" : "border-gray-300"
                       } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("postalCode")}
+                      {...register("postalCode", { required: "Postal code is required" })}
                     />
                     {errors.postalCode && (
                       <p className="text-red-500 text-sm">
@@ -251,7 +247,7 @@ export default function Checkout() {
                     className={`mt-1 block w-full px-3 py-2 border ${
                       errors.phone ? "border-red-500" : "border-gray-300"
                     } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                    {...register("phone")}
+                    {...register("phone", { required: "Phone number is required" })}
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-sm">
@@ -271,7 +267,7 @@ export default function Checkout() {
                     <input
                       type="radio"
                       value="standard"
-                      {...register("deliveryMethod")}
+                      {...register("deliveryMethod", { required: "Delivery method is required" })}
                       className="form-radio h-4 w-4 text-indigo-600"
                     />
                     <span className="ml-2 font-semibold">Standard</span>
@@ -304,7 +300,7 @@ export default function Checkout() {
                     <input
                       type="radio"
                       value="credit_card"
-                      {...register("paymentMethod")}
+                      {...register("paymentMethod", { required: "Payment method is required" })}
                       className="peer sr-only"
                     />
                     <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
@@ -370,10 +366,15 @@ export default function Checkout() {
                         </label>
                         <input
                           type="text"
-                          {...register("cardNumber")}
+                          {...register("cardNumber", { required: "Card number is required" })}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder="•••• •••• •••• ••••"
                         />
+                        {errors.cardNumber && (
+                          <p className="text-red-500 text-sm">
+                            {errors.cardNumber.message}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -381,10 +382,15 @@ export default function Checkout() {
                         </label>
                         <input
                           type="text"
-                          {...register("cardName")}
+                          {...register("cardName", { required: "Name on card is required" })}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder="John Doe"
                         />
+                        {errors.cardName && (
+                          <p className="text-red-500 text-sm">
+                            {errors.cardName.message}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -394,10 +400,15 @@ export default function Checkout() {
                         </label>
                         <input
                           type="text"
-                          {...register("expirationDate")}
+                          {...register("expirationDate", { required: "Expiry date is required" })}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder="MM/YY"
                         />
+                        {errors.expirationDate && (
+                          <p className="text-red-500 text-sm">
+                            {errors.expirationDate.message}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -405,10 +416,15 @@ export default function Checkout() {
                         </label>
                         <input
                           type="text"
-                          {...register("cvc")}
+                          {...register("cvc", { required: "CVC is required" })}
                           className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                           placeholder="•••"
                         />
+                        {errors.cvc && (
+                          <p className="text-red-500 text-sm">
+                            {errors.cvc.message}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -457,9 +473,11 @@ export default function Checkout() {
                   </div>
                 </div>
                 <button
-                  onClick={handlePlaceOrder}
-                  type="button"
-                  className="w-full bg-indigo-600 text-white py-3 rounded-lg mt-6 hover:bg-indigo-700 transition duration-150 ease-in-out"
+                  type="submit"
+                  className={`w-full bg-indigo-600 text-white py-3 rounded-lg mt-6 hover:bg-indigo-700 transition duration-150 ease-in-out ${
+                    !isValid ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={!isValid || loading}
                 >
                   {loading ? (
                     <div className="flex justify-center items-center">

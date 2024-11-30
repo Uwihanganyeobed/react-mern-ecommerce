@@ -14,7 +14,6 @@ const OrderConfirmation = () => {
 
   // Get the latest order
   const latestOrder = orders[orders.length - 1];
-
   useEffect(() => {
     clearCart();
     const animationTimer = setTimeout(() => {
