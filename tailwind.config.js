@@ -30,7 +30,13 @@ module.exports = {
         'spin-slow': {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' }
-        }
+        },
+        fadeInOut: {
+          '0%': { opacity: '0', transform: 'translate(-50%, -40%)' },
+          '10%': { opacity: '1', transform: 'translate(-50%, -50%)' },
+          '80%': { opacity: '1', transform: 'translate(-50%, -50%)' },
+          '100%': { opacity: '0', transform: 'translate(-50%, -50%)' },
+        },
       },
       animation: {
         'scale-up': 'scale-up 0.5s ease-out forwards',
@@ -42,7 +48,8 @@ module.exports = {
         'spin-slow': 'spin-slow 3s linear infinite',
         'bounce-delay-1': 'bounce 1s infinite 0.1s',
         'bounce-delay-2': 'bounce 1s infinite 0.2s',
-        'bounce-delay-3': 'bounce 1s infinite 0.3s'
+        'bounce-delay-3': 'bounce 1s infinite 0.3s',
+        fadeInOut: 'fadeInOut 3s ease-in-out forwards',
       }
     },
   },
