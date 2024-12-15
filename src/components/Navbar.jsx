@@ -109,7 +109,7 @@ export default function Navbar() {
                 value={query}
                 onChange={handleSearchChange}
                 placeholder="Search for products..."
-                className="flex-grow px-2 py-1 border rounded-l-lg text-lg" // Increased size and rounded left corners
+                className="flex-grow px-2 py-1 border border-b-gray-400 rounded-l-lg text-lg focus:outline-none focus:border-gray-500 focus:bg-transparent" // Updated focus styles
               />
               <button
                 type="submit"
@@ -211,12 +211,12 @@ export default function Navbar() {
               onSubmit={handleSearchSubmit}
               className="relative flex w-full"
             >
-              <input
+                           <input
                 type="text"
                 value={query}
                 onChange={handleSearchChange}
                 placeholder="Search for products..."
-                className="flex-grow px-4 py-2 border rounded-l-lg text-lg" // Increased size and rounded left corners
+                className="flex-grow px-4 py-2 border rounded-l-lg text-lg focus:outline-none focus:border-gray-500 focus:bg-transparent" // Updated focus styles
               />
               <button
                 type="submit"

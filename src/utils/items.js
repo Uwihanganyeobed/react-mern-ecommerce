@@ -27,7 +27,6 @@ export const blogs = [
 
 export const navigation = {
   categories: [
-    { id: "deals", name: "Deals", href: "/deals" },
     { id: "about", name: "About", href: "/about" },
     { id: "blog", name: "Blog", href: "/blog" },
     { id: "contact", name: "Contact", href: "/contact" },

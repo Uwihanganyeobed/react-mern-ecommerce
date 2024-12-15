@@ -8,6 +8,8 @@ export default function SearchResults() {
   const query = searchParams.get("q"); // Extract 'q' from the URL
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8; // Set items per page
 
   useEffect(() => {
     async function fetchSearchResults() {
@@ -27,6 +29,14 @@ export default function SearchResults() {
     fetchSearchResults();
   }, [query]);
 
+  // Calculate the current items to display
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = results.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Handle page change
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="container mx-auto px-4 py-6">
       <h2 className="text-2xl font-bold mb-4">Search Results for "{query}"</h2>
@@ -44,9 +54,9 @@ export default function SearchResults() {
               </div>
             ))}
         </div>
-      ) : results.length > 0 ? (
+      ) : currentItems.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {results.map((product) => (
+          {currentItems.map((product) => (
             <Link
               key={product._id}
               to={`/${product._id}`}
@@ -69,6 +79,21 @@ export default function SearchResults() {
       </p>
       
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-4">
+        {Array(Math.ceil(results.length / itemsPerPage))
+          .fill()
+          .map((_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => paginate(index + 1)}
+              className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}
+            >
+              {index + 1}
+            </button>
+          ))}
+      </div>
     </div>
   );
 }

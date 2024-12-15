@@ -1,7 +1,7 @@
 import React from 'react';
 import {aboutStats as stats} from "../utils/items"
+import { Link } from 'react-router-dom';
 const About = () => {
-  
 
   return (
     <section className="py-24 relative"id='about'>
@@ -78,14 +78,13 @@ const About = () => {
             </div>
 
             {/* CTA Button */}
-            <button 
+            <Link to='/' 
               className="sm:w-fit w-full px-3.5 py-2 bg-indigo-600 hover:bg-indigo-800 transition-all duration-700 ease-in-out rounded-lg shadow-[0px_1px_2px_0px_rgba(16,_24,_40,_0.05)] justify-center items-center flex mt-10"
-              onClick={() => console.log('Read More clicked')}
             >
               <span className="px-1.5 text-white text-sm font-medium leading-6">
-                Read More
+                Get Started 
               </span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
