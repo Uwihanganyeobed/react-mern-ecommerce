@@ -431,20 +431,21 @@ export default function Checkout() {
                 )}
 
                 {watch("paymentMethod") === "paypal" && (
-                  <div className="mt-6 border-t pt-4">
-                    <p className="text-center text-gray-600">
-                      You will be redirected to PayPal to complete your payment securely.
-                    </p>
-                  </div>
+                  <div className="mt-6 border-t marquee p-3 bg-yellow-200 rounded-full flex items-center justify-center overflow-hidden">
+                  <p className="text-center text-green-700 font-semibold whitespace-nowrap animate-marquee">
+                    Coming soon...
+                  </p>
+                </div>
                 )}
 
-                {watch("paymentMethod") === "digital_wallet" && (
-                  <div className="mt-6 border-t pt-4">
-                    <p className="text-center text-gray-600">
-                      Choose your digital wallet payment method on the next step.
-                    </p>
-                  </div>
-                )}
+{watch("paymentMethod") === "digital_wallet" && (
+  <div className="mt-6 border-t marquee p-3 bg-yellow-200 rounded-full flex items-center justify-center overflow-hidden">
+    <p className="text-center text-green-800 font-semibold whitespace-nowrap animate-marquee">
+      Coming soon...
+    </p>
+  </div>
+)}
+
               </div>
             </div>
 
