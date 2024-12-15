@@ -27,6 +27,7 @@ export default function Form({ type }) {
     }));
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
