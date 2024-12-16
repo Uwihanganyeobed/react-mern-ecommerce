@@ -65,7 +65,14 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/success" element={  <ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
+              <Route
+                path="/success"
+                element={
+                  <ProtectedRoute>
+                    <OrderConfirmation />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<Blog />} />
