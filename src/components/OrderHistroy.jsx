@@ -2,20 +2,40 @@ import React from 'react';
 import { useOrders } from '../context/ordersContext'; // Adjust the path if necessary
 import { useCart } from '../context/itemsContext';    // Adjust the path if necessary
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext'; // Import the auth context to get user ID
 
 const OrderHistory = () => {
   const { orders } = useOrders();
   const { cartItems } = useCart();
   const navigate = useNavigate();
+  const { userId, token } = useAuth(); // Get user ID and token from auth context
 
   // Helper function to get full item data for each order item from the cart context
   const getItemData = (itemId) => {
     return cartItems.find(cartItem => cartItem.id === itemId) || {};
   };
 
-  const handleBuyNow = (order) => {
-    // Add any order processing logic here
-    navigate('/success');
+  const handleBuyNow = async (order) => {
+    try {
+      const response = await fetch(`https://react-mern-back-end.onrender.com/users/${userId}/orders`, { // Adjust the URL as necessary
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Include token for authentication
+        },
+        body: JSON.stringify({ order }), // Send the order details
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Navigate to success page or show confirmation
+        navigate('/success');
+      } else {
+        console.error(data.message); // Handle error response
+      }
+    } catch (error) {
+      console.error('Error placing order:', error); // Handle fetch error
+    }
   };
 
   return (
@@ -53,7 +73,7 @@ const OrderHistory = () => {
                   <button className="rounded-full px-7 py-3 bg-white text-gray-900 border border-gray-300 font-semibold text-sm shadow-sm shadow-transparent transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-400">Show Invoice</button>
                   <button 
                     className="rounded-full px-7 py-3 bg-indigo-600 shadow-sm shadow-transparent text-white font-semibold text-sm transition-all duration-500 hover:shadow-indigo-400 hover:bg-indigo-700" 
-                    onClick={() => handleBuyNow(order)}
+                    onClick={() => handleBuyNow(order)} // Call handleBuyNow on click
                   >
                     Buy Now
                   </button>
