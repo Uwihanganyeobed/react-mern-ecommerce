@@ -1,8 +1,43 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '../context/itemsContext';
+import { useState } from 'react';
 
 export default function Cart() {
-  const { cartItems, removeFromCart, getCartTotal, clearCart, addCartItem } = useCart();
+  // Sample cart items
+  const [cartItems, setCartItems] = useState([
+    {
+      id: "1",
+      name: "Apple iPhone 15 Pro",
+      image: "/images/iphone15.jpg",
+      color: "Black Titanium",
+      size: "256GB",
+      new_price: 1199.99,
+      quantity: 1,
+    },
+    {
+      id: "2",
+      name: "Samsung Galaxy S24 Ultra",
+      image: "/images/samsung_s24.jpg",
+      color: "Silver",
+      size: "512GB",
+      new_price: 1299.99,
+      quantity: 1,
+    }
+  ]);
+
+  // Calculate cart total
+  const cartTotal = cartItems.reduce((total, item) => total + item.new_price * item.quantity, 0);
+
+  // Update quantity function
+  const updateQuantity = (product, change) => {
+    setCartItems(cartItems.map(item => 
+      item.id === product.id ? { ...item, quantity: item.quantity + change } : item
+    ));
+  };
+
+  // Remove item from cart
+  const removeFromCart = (id) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
@@ -15,13 +50,9 @@ export default function Cart() {
               <li className="py-6 text-center text-gray-500">Your cart is empty.</li>
             ) : (
               cartItems.map((product) => (
-                <li key={`${product.id}-${product.size}-${product.color}`} className="flex py-6">
+                <li key={product.id} className="flex py-6">
                   <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-cover object-center"
-                    />
+                    <img src={product.image} alt={product.name} className="h-full w-full object-cover object-center" />
                   </div>
 
                   <div className="ml-4 flex flex-1 flex-col">
@@ -34,7 +65,7 @@ export default function Cart() {
 
                     <div className="flex items-center mt-2 space-x-2">
                       <button
-                        onClick={() => addCartItem(product, -1)}
+                        onClick={() => updateQuantity(product, -1)}
                         className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded"
                         disabled={product.quantity <= 1}
                       >
@@ -42,7 +73,7 @@ export default function Cart() {
                       </button>
                       <span className="text-sm text-gray-700">{product.quantity}</span>
                       <button
-                        onClick={() => addCartItem(product, 1)}
+                        onClick={() => updateQuantity(product, 1)}
                         className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 rounded"
                       >
                         +
@@ -68,31 +99,15 @@ export default function Cart() {
           <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
             <div className="flex justify-between text-base font-medium text-gray-900">
               <p>Subtotal</p>
-              <p>${getCartTotal().toFixed(2)}</p>
-            </div>
-            <button onClick={clearCart} className="mt-6 text-indigo-600">
-              Clear Cart
-            </button>
-            
-            <div className="mt-4 flex justify-center space-x-5">
-              <img src="/assets/icons/visa.svg" alt="Visa" className="h-10" />
-              <img src="/assets/icons/mastercard.svg" alt="Mastercard" className="h-10" />
-              <img src="/assets/icons/amex.svg" alt="American Express" className="h-10" />
-              <img src="/assets/icons/paypal.svg" alt="PayPal" className="h-10" />
+              <p>${cartTotal.toFixed(2)}</p>
             </div>
 
             <Link
               to="/checkout"
-              className="mt-6 flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
+              className="mt-6 flex items-center justify-center rounded-md bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
             >
               Checkout
             </Link>
-            <p className="mt-6 text-center text-sm text-gray-500">
-              or{' '}
-              <Link to="/" className="text-indigo-600 hover:underline">
-                Continue Shopping
-              </Link>
-            </p>
           </div>
         )}
       </div>

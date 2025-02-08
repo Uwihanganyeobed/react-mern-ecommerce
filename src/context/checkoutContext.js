@@ -1,91 +1,106 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './authContext';
+import { createContext, useContext, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const CheckoutContext = createContext();
 
-export function CheckoutProvider({ children }) {
-  const [checkoutData, setCheckoutData] = useState({
-    billing: {},
-    shipping: {},
-    shippingMethod: '',
-    payment: {},
-    orderSummary: {}
-  });
+export const CheckoutProvider = ({ children }) => {
+  const [checkoutStep, setCheckoutStep] = useState(1);
+  const [shippingAddress, setShippingAddress] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const [loading, setLoading] = useState(false);
   
-  const { userName, isLoggedIn } = useAuth();
+  // const { cartItems, cartTotal, clearCart } = useCart();
+  // const { user } = useAuth();
 
-  // Handle login/logout events
-  useEffect(() => {
-    const handleUserLogin = (event) => {
-      const { userName, checkout } = event.detail;
-      if (checkout) {
-        setCheckoutData(checkout);
+  const processCheckout = async () => {
+    try {
+      setLoading(true);
+
+      if (!shippingAddress || !paymentMethod) {
+        throw new Error('Please complete all checkout steps');
       }
-    };
 
-    const handleUserLogout = () => {
-      // Save current checkout data before clearing
-      if (userName) {
-        localStorage.setItem(`checkout_${userName}`, JSON.stringify(checkoutData));
-      }
-      setCheckoutData({
-        billing: {},
-        shipping: {},
-        shippingMethod: '',
-        payment: {},
-        orderSummary: {}
-      });
-    };
+      // Create order with current cart items
+      // const orderData = {
+      //   items: cartItems.map(item => ({
+      //     product: item.product._id,
+      //     quantity: item.quantity,
+      //     price: item.product.new_price
+      //   })),
+      //   total: cartTotal,
+      //   shippingAddress,
+      //   paymentMethod,
+      //   status: 'pending'
+      // };
 
-    window.addEventListener('userLogin', handleUserLogin);
-    window.addEventListener('userLogout', handleUserLogout);
+      // const response = await orders.create(orderData);
+      
+      // // Clear cart after successful order
+      // clearCart();
+      
+      // Reset checkout
+      resetCheckout();
 
-    return () => {
-      window.removeEventListener('userLogin', handleUserLogin);
-      window.removeEventListener('userLogout', handleUserLogout);
-    };
-  }, [userName, checkoutData]);
+      toast.success('Order placed successfully!');
+      // return response.data.order;
 
-  const updateCheckoutData = (step, data) => {
-    if (!isLoggedIn) {
-      console.warn('Please login to update checkout data');
-      return;
-    }
-
-    const newData = {
-      ...checkoutData,
-      [step]: data
-    };
-    setCheckoutData(newData);
-    
-    if (userName) {
-      localStorage.setItem(`checkout_${userName}`, JSON.stringify(newData));
+    } catch (error) {
+      toast.error(error.message || 'Error processing checkout');
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const clearCheckoutData = () => {
-    if (userName) {
-      localStorage.removeItem(`checkout_${userName}`);
+  const resetCheckout = () => {
+    setCheckoutStep(1);
+    setShippingAddress(null);
+    setPaymentMethod(null);
+  };
+
+  const validateStep = (step) => {
+    switch (step) {
+      case 1: // Shipping
+        return !!shippingAddress;
+      case 2: // Payment
+        return !!paymentMethod;
+      default:
+        return true;
     }
-    setCheckoutData({
-      billing: {},
-      shipping: {},
-      shippingMethod: '',
-      payment: {},
-      orderSummary: {}
-    });
+  };
+
+  const goToNextStep = () => {
+    if (validateStep(checkoutStep)) {
+      setCheckoutStep(prev => prev + 1);
+      return true;
+    }
+    toast.error('Please complete all required fields');
+    return false;
+  };
+
+  const goToPreviousStep = () => {
+    setCheckoutStep(prev => Math.max(1, prev - 1));
   };
 
   return (
-    <CheckoutContext.Provider value={{ 
-      checkoutData, 
-      updateCheckoutData,
-      clearCheckoutData 
+    <CheckoutContext.Provider value={{
+      checkoutStep,
+      setCheckoutStep,
+      shippingAddress,
+      setShippingAddress,
+      paymentMethod,
+      setPaymentMethod,
+      loading,
+      processCheckout,
+      resetCheckout,
+      goToNextStep,
+      goToPreviousStep,
+      validateStep
     }}>
       {children}
     </CheckoutContext.Provider>
   );
-}
+};
 
 export const useCheckout = () => {
   const context = useContext(CheckoutContext);

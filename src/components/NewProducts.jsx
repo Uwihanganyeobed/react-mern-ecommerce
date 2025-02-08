@@ -1,121 +1,84 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
 import { Link } from "react-router-dom";
 import { newSettings as settings } from "../utils/slickSettings";
-import axios from "axios";
 
-const NewProducts = () => {
-  const [newProducts, setNewProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // Loading state for skeletons
+const newProducts = [
+  {
+    _id: "1",
+    name: "Apple iPhone 15 Pro",
+    image: "/images/iphone15.jpg",
+    new_price: 999.99,
+    category: "electronics",
+    rating: 5,
+  },
+  {
+    _id: "2",
+    name: "Nike Air Max 2024",
+    image: "/images/nike.jpg",
+    new_price: 199.99,
+    category: "shoes",
+    rating: 4,
+  },
+  {
+    _id: "3",
+    name: "Sony WH-1000XM5",
+    image: "/images/sony_wh1000.jpg",
+    new_price: 349.99,
+    category: "electronics",
+    rating: 5,
+  },
+];
 
-  // Fetch products from backend or use search results
-  useEffect(() => {
- 
-  const fetchProducts = async () => {
-    try {
-      const response = await axios.get(
-        "https://react-mern-back-end.onrender.com/products/"
-      );
-      const data = response.data;
-      const filteredProducts = data.filter(
-        (product) => product.is_new && product.category !== "logo-admin"
-      );
-      setNewProducts(filteredProducts);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false); // Stop loading after fetching
-    }
-  };
-  fetchProducts();
-  });
-  // Show skeleton loader while loading
-  if (loading) {
-    return (
-      <section className="py-24 bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">
-            New Arrivals
-          </h2>
-          <Slider {...settings}>
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="p-4">
-                <Skeleton height={224} className="rounded-lg mb-2" />
-                <Skeleton height={20} width={`80%`} />
-                <Skeleton height={20} width={`50%`} />
-                <Skeleton height={15} width={`60%`} />
-              </div>
-            ))}
-          </Slider>
-        </div>
-      </section>
-    );
-  }
-
-  // Render products or empty state if no products
+export default function NewProducts() {
   return (
     <section className="py-24 bg-gray-50" id="newProducts">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="font-manrope font-bold text-4xl text-black mb-8 max-xl:text-center">
+        <h2 className="font-bold text-4xl text-black mb-8 text-center">
           New Arrivals
         </h2>
-        {newProducts.length > 0 ? (
-          <Slider {...settings}>
-            {newProducts.map((product) => (
-              <div key={product._id} className="p-4">
-                <Link
-                  to={`/new/${product._id}`}
-                  className="relative bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer"
-                >
-                  <img
-                    className="rounded-t-lg object-cover w-full h-56"
-                    src={product.image}
-                    alt={product.name}
-                  />
-                  <div className="p-4">
-                    <h6 className="font-semibold text-base leading-7 text-black">
-                      {product.name}
-                    </h6>
-                    <h6 className="font-semibold text-base leading-7 text-indigo-600 text-right">
-                      ${product.new_price}
-                    </h6>
-                    <p className="text-xs leading-5 text-gray-500">
-                      {product.category}
-                    </p>
-                    <div className="flex items-center mt-1">
-                      {[...Array(5)].map((_, index) => (
-                        <svg
-                          key={index}
-                          className={`h-4 w-4 ${
-                            index < product.rating
-                              ? "text-orange-600"
-                              : "text-gray-300"
-                          }`}
-                          aria-hidden="true"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 .587l3.668 7.429L24 9.188c.285.041.396.391.191.586l-5.93 5.773L19.399 24c.049.285-.248.506-.495.372L12 18.896l-7.642 4.006c-.247.134-.544-.087-.495-.372l1.399-8.151L0 .587c-.205-.195-.094-.545.191-.586l8.209-1.188L12 .587z" />
-                        </svg>
-                      ))}
-                    </div>
+        <Slider {...settings}>
+          {newProducts.map((product) => (
+            <div key={product._id} className="p-4">
+              <Link
+                to={`/new/${product._id}`}
+                className="relative bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer"
+              >
+                <img
+                  className="rounded-t-lg object-cover w-full h-56"
+                  src={product.image}
+                  alt={product.name}
+                />
+                <div className="p-4">
+                  <h6 className="font-semibold text-base text-black">
+                    {product.name}
+                  </h6>
+                  <h6 className="font-semibold text-base text-indigo-600 text-right">
+                    ${product.new_price}
+                  </h6>
+                  <p className="text-xs text-gray-500">{product.category}</p>
+                  <div className="flex items-center mt-1">
+                    {[...Array(5)].map((_, index) => (
+                      <svg
+                        key={index}
+                        className={`h-4 w-4 ${
+                          index < product.rating ? "text-orange-600" : "text-gray-300"
+                        }`}
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 .587l3.668 7.429L24 9.188c.285.041.396.391.191.586l-5.93 5.773L19.399 24c.049.285-.248.506-.495.372L12 18.896l-7.642 4.006c-.247.134-.544-.087-.495-.372l1.399-8.151L0 .587c-.205-.195-.094-.545.191-.586l8.209-1.188L12 .587z" />
+                      </svg>
+                    ))}
                   </div>
-                </Link>
-              </div>
-            ))}
-          </Slider>
-        ) : (
-          <div className="text-center text-gray-500">
-            No new products available.
-          </div>
-        )}
+                </div>
+              </Link>
+            </div>
+          ))}
+        </Slider>
       </div>
     </section>
   );
-};
-
-export default NewProducts;
+}

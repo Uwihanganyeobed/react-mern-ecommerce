@@ -1,51 +1,91 @@
-import React, { createContext, useState, useContext } from "react";
-import axios from "axios";
+import React, { createContext, useState, useContext, useCallback } from "react";
+import { product as productApi } from '../services/api';
+import { toast } from 'react-toastify';
 
 const SearchContext = createContext();
 
 export const SearchProvider = ({ children }) => {
-  const [searchTerm, setSearchTerm] = useState(""); // Store the search term globally
-  const [searchResults, setSearchResults] = useState([]); // Store search results globally
-  const [isLoading, setIsLoading] = useState(false); // For loading state
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    category: '',
+    minPrice: '',
+    maxPrice: '',
+    sort: ''
+  });
 
-  // Fetch search results based on the search term
-  const searchProducts = async (term) => {
-    setSearchTerm(term); // Update the global search term
-    if (!term) return setSearchResults([]); // Clear results for an empty search
+  const searchProducts = useCallback(async (query) => {
     try {
-      setIsLoading(true);
-      const response = await axios.get(
-        `https://react-mern-back-end.onrender.com/products/search?name=${term}`
-      );
-      setSearchResults(response.data);
+      setLoading(true);
+      const response = await productApi.searchProducts(query);
+      console.log('Search Results:', response.data);
+      
+      // Check if the response has the expected structure
+      const results = response.data?.data || response.data || [];
+      setSearchResults(results);
+      return results;
     } catch (error) {
-      console.error("Error fetching search results:", error);
+      console.error('Search Error:', error);
+      toast.error('Error searching products');
+      setSearchResults([]);
+      return [];
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
+  }, []);
+
+  const filterProducts = useCallback(async (filterParams) => {
+    try {
+      setLoading(true);
+      let results;
+      
+      if (filterParams.minPrice || filterParams.maxPrice) {
+        results = await productApi.filterProductsByPriceRange(
+          filterParams.minPrice,
+          filterParams.maxPrice
+        );
+      }
+      
+      if (filterParams.sort) {
+        results = await productApi.sortProducts(filterParams.sort);
+      }
+
+      if (filterParams.category) {
+        results = await productApi.getProductsByCategory(filterParams.category);
+      }
+
+      const finalResults = results?.data?.data || results?.data || [];
+      setSearchResults(finalResults);
+      setFilters(filterParams);
+      return finalResults;
+    } catch (error) {
+      console.error('Filter Error:', error);
+      toast.error('Error filtering products');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const value = {
+    searchResults,
+    loading,
+    filters,
+    searchProducts,
+    filterProducts
   };
 
-  // Reset the search state
-  const clearSearch = () => {
-    setSearchTerm("");
-    setSearchResults([]);
-  };
-
-  // Make state and functions available to other components
   return (
-    <SearchContext.Provider
-      value={{
-        searchTerm,
-        setSearchTerm,
-        searchResults,
-        searchProducts,
-        clearSearch,
-        isLoading,
-      }}
-    >
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   );
 };
 
-export const useSearch = () => useContext(SearchContext);
+export const useSearch = () => {
+  const context = useContext(SearchContext);
+  if (!context) {
+    throw new Error('useSearch must be used within a SearchProvider');
+  }
+  return context;
+};

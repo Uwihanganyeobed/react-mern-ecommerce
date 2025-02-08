@@ -1,23 +1,25 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { formSchema } from "../utils/validations";
 import { z } from "zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import { AuthContext } from "../context/authContext";
+import { useAuth } from '../context/authContext';
 
 export default function Form({ type }) {
   const navigate = useNavigate();
-  const isLogin = type === "login";
+  const location = useLocation();
+  const { login, register } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     phone: "",
-    role: isLogin ? undefined : "User",
+    role: type === "login" ? undefined : "User",
   });
   const [errors, setErrors] = useState({});
-  const { login } = useContext(AuthContext); // Use the login method from AuthContext
+  const from = location.state?.from || '/';  // Get the redirect path
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,197 +32,156 @@ export default function Form({ type }) {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const schema = formSchema(type);
-      schema.parse(formData);
+      await schema.parseAsync(formData);
   
-      const response = await fetch(`https://react-mern-back-end.onrender.com/auth/${isLogin ? "login" : "signup"}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(isLogin ? { email: formData.email, password: formData.password } : formData),
-      });
-  
-      const data = await response.json();
-      if (data.success) {
-        toast.success(isLogin ? 'Welcome 😃 again!' : "Successfully signed up!");
-
-        if (data.token) {
-          // Store token and username using the login method from context
-          login(data.token, formData.name);
-
-          // Fetch user data if necessary
-          const decodedToken = JSON.parse(atob(data.token.split('.')[1])); // Decode JWT to get user ID
-          const userId = decodedToken.id;
-
-          // Fetch user details
-          const userResponse = await fetch(`https://react-mern-back-end.onrender.com/users/${userId}`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${data.token}`,
-            },
-          });
-          const userData = await userResponse.json();
-  
-          if (userData && userData.name) {
-            login(data.token, userData.name); // Store username in context
-          }
-  
-          navigate("/"); // Redirect after success
+      if (type === "login") {
+        const success = await login({
+          email: formData.email,
+          password: formData.password
+        });
+        if (success) {
+          navigate(from);  // Redirect to the protected route they tried to access
         }
       } else {
-        setErrors({ general: data.error });
+        await register(formData);
+        // After successful registration, redirect to a confirmation page
+        navigate("/register/confirmation", { 
+          state: { email: formData.email }
+        });
       }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors = error.errors.reduce((acc, err) => {
-          acc[err.path[0]] = err.message;
-          return acc;
-        }, {});
-        setErrors(fieldErrors);
+      if (error.errors) {
+        error.errors.forEach(err => toast.error(err.message));
+      } else {
+        toast.error(error.response?.data?.message || "An error occurred");
       }
+    } finally {
+      setLoading(false);
     }
   };
   
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8" id="form">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-          {isLogin ? "Sign in to your account" : "Create a new account"}
-        </h2>
-      </div>
-
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {type === "login" ? "Sign in to your account" : "Create new account"}
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {/* Name field for sign-up */}
-          {!isLogin && (
+          {type === "signup" && (
             <div>
-              <label htmlFor="name" className="block text-sm font-medium leading-6 text-gray-900">
-                Name
-              </label>
-              <div className="mt-2">
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  required={!isLogin}
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-                {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
-              </div>
+              <label htmlFor="name" className="sr-only">Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Full name"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </div>
           )}
 
           {/* Email field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-              Email address
-            </label>
-            <div className="mt-2">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Enter your email address"
-                required
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
-            </div>
+            <label htmlFor="email" className="sr-only">Email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Email address"
+              value={formData.email}
+              onChange={handleChange}
+            />
           </div>
 
           {/* Phone field for sign-up */}
-          {!isLogin && (
+          {type === "signup" && (
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium leading-6 text-gray-900">
-                Phone Number
-              </label>
-              <div className="mt-2">
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  required={!isLogin}
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-                {errors.phone && <p className="text-red-500 text-xs">{errors.phone}</p>}
-              </div>
+              <label htmlFor="phone" className="sr-only">Phone Number</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={handleChange}
+              />
             </div>
           )}
 
           {/* Password field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
-              Password
-            </label>
-            <div className="mt-2">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="******"
-                required
-                autoComplete={isLogin ? "current-password" : "new-password"}
-                value={formData.password}
-                onChange={handleChange}
-                className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-              />
-              {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
-            </div>
+            <label htmlFor="password" className="sr-only">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+            />
           </div>
 
           {/* Confirm Password field for sign-up */}
-          {!isLogin && (
+          {type === "signup" && (
             <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium leading-6 text-gray-900">
-                Confirm Password
-              </label>
-              <div className="mt-2">
-                <input
-                  id="confirm-password"
-                  name="confirmPassword"
-                  type="password"
-                  placeholder="******"
-                  required={!isLogin}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="block w-full px-2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-                {errors.confirmPassword && <p className="text-red-500 text-xs">{errors.confirmPassword}</p>}
-              </div>
+              <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+            </div>
+          )}
+
+          {type === "login" && (
+            <div className="text-sm">
+              <Link
+                to="/forgot-password"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </Link>
             </div>
           )}
 
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {isLogin ? "Sign in" : "Sign up"}
+              {loading ? "Processing..." : type === "login" ? "Sign in" : "Sign up"}
             </button>
           </div>
-
-          {/* Display success message */}
-          {/* {successMessage && <p className="text-green-500 text-xs">{successMessage}</p>} */}
 
           {/* Display general errors if any */}
           {errors.general && <p className="text-red-500 text-xs">{errors.general}</p>}
         </form>
 
         <p className="mt-10 text-center text-sm text-gray-500">
-          {isLogin ? (
+          {type === "login" ? (
             <>
               Not a member yet?{" "}
               <Link to="/register" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">

@@ -1,64 +1,75 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import {
   Bars3Icon,
   ShoppingBagIcon,
   XMarkIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
-import { AuthContext } from "../context/authContext";
-import { useCart } from "../context/itemsContext";
+import { useAuth } from '../context/authContext';
+import { useCart } from '../context/cartContext';
+import { useProducts } from '../context/productContext';
+import { useSearch } from '../context/searchContext';
 
 export default function Navbar() {
-
   const [open, setOpen] = useState(false);
-  const { isLoggedIn, userName, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [query, setQuery] = useState(""); // Search query
-  const [suggestions, setSuggestions] = useState([]); // Suggestions array
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, isLoggedIn, logout, loading } = useAuth();
   const { cartItems } = useCart();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   let debounceTimer;
+  const { searchProducts } = useSearch();
 
   const handleSearchChange = (e) => {
     const searchTerm = e.target.value;
     setQuery(searchTerm);
+    
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(async () => {
       if (searchTerm.length > 2) {
         try {
-          const response = await fetch(
-            `https://react-mern-back-end.onrender.com/products/search?q=${searchTerm}`
-          );
-          const data = await response.json();
-          setSuggestions(data);
+          const results = await searchProducts({ q: searchTerm });
+          setSuggestions(Array.isArray(results) ? results : []);
           setIsModalOpen(true);
         } catch (error) {
           console.error("Error fetching search suggestions:", error);
+          setSuggestions([]);
         }
       } else {
         setSuggestions([]);
         setIsModalOpen(false);
       }
-    }, 300); // Wait 300ms before making the API call
+    }, 300);
   };
 
   const handleSuggestionClick = (productId) => {
-    setIsModalOpen(false); // Close modal
-    navigate(`/${productId}`); // Navigate to product details page
+    setIsModalOpen(false);
+    navigate(`/${productId}`);
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setIsModalOpen(false);
-    navigate(`/search?q=${query}`); // Navigate to the search results page
+    navigate(`/search?q=${query}`);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const getInitials = (name) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    if (names.length >= 2) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -66,10 +77,9 @@ export default function Navbar() {
       {/* Announcement bar */}
       <div className="bg-indigo-600 text-white text-center py-2">
         Get free delivery on orders over $100
-        {isLoggedIn && (
+        {isLoggedIn && !loading && user && (
           <strong className="text-lg ml-10 text-yellow-300">
-            {" "}
-            Welcome {userName}{" "}
+            Welcome {user.name}
           </strong>
         )}
       </div>
@@ -100,53 +110,65 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
-            <form
-              onSubmit={handleSearchSubmit}
-              className="relative flex w-full"
-            >
+
+            {/* Search Form */}
+            <form onSubmit={handleSearchSubmit} className="relative flex w-full">
               <input
                 type="text"
                 value={query}
                 onChange={handleSearchChange}
                 placeholder="Search for products..."
-                className="flex-grow px-2 py-1 border border-b-gray-400 rounded-l-lg text-lg focus:outline-none focus:border-gray-500 focus:bg-transparent" // Updated focus styles
+                className="flex-grow px-2 py-1 border border-b-gray-400 rounded-l-lg text-lg focus:outline-none focus:border-gray-500 focus:bg-transparent"
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-2 py-2 rounded-r-lg text-lg hover:bg-blue-700" // Added button styling
+                className="bg-blue-600 text-white px-2 py-2 rounded-r-lg text-lg hover:bg-blue-700"
               >
                 Search
               </button>
+              
               {/* Suggestions Modal */}
-              {isModalOpen && (
+              {isModalOpen && suggestions.length > 0 && (
                 <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg w-full z-10">
-                  {suggestions.length > 0 ? (
-                    suggestions.map((item) => (
-                      <div
-                        key={item._id}
-                        onClick={() => handleSuggestionClick(item._id)}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                      >
-                        {item.name}
+                  {suggestions.map((item) => (
+                    <div
+                      key={item._id}
+                      onClick={() => handleSuggestionClick(item._id)}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span>{item.name}</span>
+                        <span className="text-gray-600">
+                          {typeof item.price === 'object' 
+                            ? `$${(item.price.current || item.price.original || 0).toFixed(2)}`
+                            : `$${parseFloat(item.price || 0).toFixed(2)}`
+                          }
+                        </span>
                       </div>
-                    ))
-                  ) : (
-                    <div className="p-2 text-gray-500">
-                      No suggestions found
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </form>
-            {/* Account / Logout */}
-            <div className="mt-4">
+
+            {/* Account / Profile / Logout */}
+            <div className="mt-4 space-y-2">
               {isLoggedIn ? (
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-lg font-medium text-gray-700 hover:text-red-600"
-                >
-                  Logout
-                </button>
+                <>
+                  <Link
+                    to="/profile"
+                    className="flex items-center space-x-2 text-lg font-medium text-gray-700 hover:text-blue-600"
+                  >
+                    <UserCircleIcon className="h-6 w-6" />
+                    <span>Profile</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-lg font-medium text-gray-700 hover:text-red-600"
+                  >
+                    Logout
+                  </button>
+                </>
               ) : (
                 <Link
                   to="/login"
@@ -160,20 +182,24 @@ export default function Navbar() {
             {/* Cart Icon */}
             <Link className="mt-4 flex items-center justify-between" to="/cart">
               <span className="text-sm font-medium text-gray-700">
-                Cart ({cartItems.length})
+                Cart ({cartItems?.length || 0})
               </span>
               <div className="relative">
                 <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center h-4 w-4 bg-red-600 text-white text-xs font-bold rounded-full">
-                  {cartItems.length}
-                </span>
+                {cartItems?.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-600 flex items-center justify-center">
+                    <span className="text-xs font-medium text-white">
+                      {cartItems.length}
+                    </span>
+                  </span>
+                )}
               </div>
             </Link>
           </Dialog.Panel>
         </div>
       </Dialog>
 
-      {/* Top nav */}
+      {/* Desktop navbar */}
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 border-b border-gray-200">
           {/* Mobile menu button */}
@@ -191,7 +217,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Left-Side Links (Desktop Only) */}
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex lg:space-x-4 lg:mr-auto">
             {navigation.categories.map((category) => (
               <Link
@@ -205,91 +231,93 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Search Bar (Desktop Only) */}
+          {/* Desktop Search */}
           <div className="hidden md:flex items-center w-1/2 lg:w-2/5 xl:w-1/3">
-            <form
-              onSubmit={handleSearchSubmit}
-              className="relative flex w-full"
-            >
-                           <input
+            <form onSubmit={handleSearchSubmit} className="relative flex w-full">
+              <input
                 type="text"
                 value={query}
                 onChange={handleSearchChange}
                 placeholder="Search for products..."
-                className="flex-grow px-4 py-2 border rounded-l-lg text-lg focus:outline-none focus:border-gray-500 focus:bg-transparent" // Updated focus styles
+                className="flex-grow px-4 py-2 border rounded-l-lg text-lg focus:outline-none focus:border-gray-500 focus:bg-transparent"
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-1 py-2 rounded-r-lg text-lg hover:bg-blue-700" // Added button styling
+                className="bg-blue-600 text-white px-1 py-2 rounded-r-lg text-lg hover:bg-blue-700"
               >
                 Search
               </button>
+              
               {/* Suggestions Modal */}
-              {isModalOpen && (
+              {isModalOpen && suggestions.length > 0 && (
                 <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg w-full z-10">
-                  {suggestions.length > 0 ? (
-                    suggestions.map((item) => (
-                      <div
-                        key={item._id}
-                        onClick={() => handleSuggestionClick(item._id)}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                      >
-                        {item.name}
+                  {suggestions.map((item) => (
+                    <div
+                      key={item._id}
+                      onClick={() => handleSuggestionClick(item._id)}
+                      className="p-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span>{item.name}</span>
+                        <span className="text-gray-600">
+                          {typeof item.price === 'object' 
+                            ? `$${(item.price.current || item.price.original || 0).toFixed(2)}`
+                            : `$${parseFloat(item.price || 0).toFixed(2)}`
+                          }
+                        </span>
                       </div>
-                    ))
-                  ) : (
-                    <div className="p-2 text-gray-500">
-                      No suggestions found
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </form>
           </div>
-          {/* Right-side Controls (Desktop Only) */}
+
+          {/* Desktop Right Controls */}
           <div className="hidden lg:flex items-center space-x-4 ml-auto">
-            {isLoggedIn ? (
-              <button
-                onClick={handleLogout}
-                className="text-lg font-medium text-gray700 hover:text-red600"
-              >
-                Logout
-              </button>
+            {isLoggedIn && !loading && user ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
+                  title="Profile"
+                >
+                  <UserCircleIcon className="h-6 w-6" />
+                  <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <span className="text-sm font-medium text-indigo-600">
+                      {getInitials(user.name)}
+                    </span>
+                  </div>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-lg font-medium text-gray-700 hover:text-red-600"
+                >
+                  Logout
+                </button>
+              </>
             ) : (
               <Link
                 to="/login"
-                className="text-lg font-medium text-gray700 hover:text-blue600"
+                className="text-lg font-medium text-gray-700 hover:text-blue-600"
               >
                 Account
               </Link>
             )}
 
-            <span className="h6 w-px bg-gray200" aria-hidden="true" />
+            <span className="h-6 w-px bg-gray-200" aria-hidden="true" />
 
-            {/* Currency Selector and Cart Group */}
-            <div className="flex items-center space-x-6">
-              {/* Currency Selector */}
-              <select className="border border-gray-300 rounded-md text-sm font-medium text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 py-2">
-                <option value="CAD">CAD</option>
-                <option value="USD">USD</option>
-              </select>
-
-              {/* Enhanced Cart Icon */}
-              <Link 
-                to="/cart" 
-                className="group -m-2 flex items-center p-2 relative"
-                aria-label="View cart"
-              >
-                <ShoppingBagIcon className="h-6 w-6 text-gray-600 group-hover:text-gray-800" />
-                {cartItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">
-                      {cartItems.length}
-                    </span>
+            {/* Cart */}
+            <Link to="/cart" className="group -m-2 flex items-center p-2 relative">
+              <ShoppingBagIcon className="h-6 w-6 text-gray-600 group-hover:text-gray-800" />
+              {cartItems?.length > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
+                  <span className="text-xs font-medium text-white">
+                    {cartItems.length}
                   </span>
-                )}
-              </Link>
-            </div>
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </nav>
