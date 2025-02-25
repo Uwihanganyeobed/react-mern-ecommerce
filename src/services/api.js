@@ -60,12 +60,11 @@ const product = {
   searchProducts: (query) => api.get('/products/search', { params: query }),
   getFeaturedProducts: () => api.get('/products/featured'),
   getProductsByCategory: (category) => api.get(`/products/category/${category}`),
+  getCategoryProduct: (id) => api.get(`/products/product/${id}`),
   getAvailableProducts: () => api.get('/products/available'),
   getTopRatedProducts: () => api.get('/products/top-rated'),
   getPaginatedProducts: (page) => api.get(`/products/page/${page}`),
   getBlogProduct: (id) => api.get(`/products/blog/${id}`),
-  getFeaturedProduct: (id) => api.get(`/products/featured/${id}`),
-  getCategoryProduct: (id) => api.get(`/products/category/${id}`),
   getNewProduct: (id) => api.get(`/products/new/${id}`),
   getNewProducts: () => api.get('/products/new'),
   sortProducts: (sortParams) => api.get('/products/sort', { params: sortParams }),
@@ -126,9 +125,9 @@ const notification = {
 
 // Subscription endpoints
 const subscription = {
-  subscribe: () => api.post('/subscriptions/subscribe'),
-  unsubscribe: (token) => api.post(`/subscriptions/unsubscribe/${token}`),
-  verifySubscription: (token) => api.get(`/subscriptions/verify/${token}`)
+  subscribe: () => api.post('/subscribers/subscribe'),
+  unsubscribe: (token) => api.post(`/subscribers/unsubscribe/${token}`),
+  verifySubscription: (token) => api.get(`/subscribers/verify/${token}`)
 };
 
 export { 

@@ -1,84 +1,106 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import { Link } from "react-router-dom";
 import { newSettings as settings } from "../utils/slickSettings";
-
-const newProducts = [
-  {
-    _id: "1",
-    name: "Apple iPhone 15 Pro",
-    image: "/images/iphone15.jpg",
-    new_price: 999.99,
-    category: "electronics",
-    rating: 5,
-  },
-  {
-    _id: "2",
-    name: "Nike Air Max 2024",
-    image: "/images/nike.jpg",
-    new_price: 199.99,
-    category: "shoes",
-    rating: 4,
-  },
-  {
-    _id: "3",
-    name: "Sony WH-1000XM5",
-    image: "/images/sony_wh1000.jpg",
-    new_price: 349.99,
-    category: "electronics",
-    rating: 5,
-  },
-];
+import { useProducts } from "../context/productContext";
 
 export default function NewProducts() {
-  return (
-    <section className="py-24 bg-gray-50" id="newProducts">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="font-bold text-4xl text-black mb-8 text-center">
-          New Arrivals
-        </h2>
-        <Slider {...settings}>
-          {newProducts.map((product) => (
-            <div key={product._id} className="p-4">
-              <Link
-                to={`/new/${product._id}`}
-                className="relative bg-white rounded-lg shadow-md overflow-hidden group cursor-pointer"
-              >
-                <img
-                  className="rounded-t-lg object-cover w-full h-56"
-                  src={product.image}
-                  alt={product.name}
-                />
-                <div className="p-4">
-                  <h6 className="font-semibold text-base text-black">
-                    {product.name}
-                  </h6>
-                  <h6 className="font-semibold text-base text-indigo-600 text-right">
-                    ${product.new_price}
-                  </h6>
-                  <p className="text-xs text-gray-500">{product.category}</p>
-                  <div className="flex items-center mt-1">
-                    {[...Array(5)].map((_, index) => (
-                      <svg
-                        key={index}
-                        className={`h-4 w-4 ${
-                          index < product.rating ? "text-orange-600" : "text-gray-300"
-                        }`}
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 .587l3.668 7.429L24 9.188c.285.041.396.391.191.586l-5.93 5.773L19.399 24c.049.285-.248.506-.495.372L12 18.896l-7.642 4.006c-.247.134-.544-.087-.495-.372l1.399-8.151L0 .587c-.205-.195-.094-.545.191-.586l8.209-1.188L12 .587z" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-              </Link>
-            </div>
-          ))}
-        </Slider>
+  const { newProducts, fetchNewProducts, loading } = useProducts();
+
+  useEffect(() => {
+    if (!newProducts || newProducts.length === 0) {
+      fetchNewProducts();
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900">New Arrivals</h2>
+          <div className="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+            {[1, 2, 3, 4].map((index) => (
+              <div key={index} className="animate-pulse">
+                <div className="w-full h-64 bg-gray-300 rounded-lg"></div>
+                <div className="mt-2 h-4 bg-gray-300 rounded w-3/4"></div>
+                <div className="mt-1 h-4 bg-gray-300 rounded w-1/4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </section>
+    );
+  }
+
+  const productArray = Array.isArray(newProducts)
+    ? newProducts
+    : newProducts && newProducts.data && Array.isArray(newProducts.data)
+    ? newProducts.data
+    : [];
+
+  if (productArray.length === 0) {
+    return (
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900">New Arrivals</h2>
+          <p className="mt-4 text-gray-500">
+            No new products available at the moment.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <h2 className="text-2xl font-bold text-gray-900">New Arrivals</h2>
+        <div className="mt-6">
+          <Slider {...settings}>
+            {productArray.map((product) => (
+              <div key={product.id || product._id} className="px-2">
+                {product.flags?.isNew && (
+                  <Link
+                    to="/new-products"
+                    className="absolute top-2 right-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md"
+                  >
+                    New
+                  </Link>
+                 )} 
+                <Link to={`/product/${product.id || product._id}`}>
+                  <img
+                    alt={product.title}
+                    src={
+                      product.thumbnail ||
+                      (product.images && product.images[0]?.url)
+                    }
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                </Link>
+                <h3 className="mt-2 text-sm text-gray-700">{product.title}</h3>
+                <p className="text-xs text-gray-500">
+                  {product.shortDescription}
+                </p>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-sm font-medium text-red-600">
+                    ${(product.price?.current || 0).toFixed(2)}
+                  </p>
+                  {product.price?.original && (
+                    <p className="text-sm text-gray-500 line-through">
+                      ${product.price.original.toFixed(2)}
+                    </p>
+                  )}
+                </div>
+                {product.stock > 0 ? (
+                  <p className="text-green-600 text-xs">In Stock</p>
+                ) : (
+                  <p className="text-red-600 text-xs">Out of Stock</p>
+                )}
+              </div>
+            ))}
+          </Slider>
+        </div>
+      </div>
+    </div>
   );
 }

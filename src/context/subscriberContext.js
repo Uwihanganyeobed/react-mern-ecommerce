@@ -74,19 +74,7 @@ export const SubscriberProvider = ({ children }) => {
     }
   };
 
-  const updatePreferences = async (newPreferences) => {
-    try {
-      setLoading(true);
-      const response = await subscriptionApi.updatePreferences(newPreferences);
-      setPreferences(response.data);
-      toast.success('Preferences updated successfully');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Error updating preferences');
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   return (
     <SubscriberContext.Provider value={{
@@ -96,7 +84,6 @@ export const SubscriberProvider = ({ children }) => {
       subscribe,
       unsubscribe,
       verifySubscription,
-      updatePreferences
     }}>
       {children}
     </SubscriberContext.Provider>

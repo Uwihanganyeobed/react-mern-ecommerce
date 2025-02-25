@@ -1,21 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useSubscriber } from "../context/subscriberContext";
+import { useAuth } from "../context/authContext";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { subscribe, subscriptionStatus } = useSubscriber();
+  const { user, isAuthenticated } = useAuth();
+  
+  // Update email when user authentication changes
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    } else {
+      setEmail("");
+    }
+  }, [user, isAuthenticated]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email) return;
+    
+    if (!email) {
+      toast.error("Email is required");
+      return;
+    }
     
     setIsSubmitting(true);
-    setTimeout(() => {
-      toast.success("Successfully subscribed to newsletter!");
-      setEmail("");
+    try {
+      const subscribeData = {
+        email: email,
+        name: user?.name || "",
+        preferences: {
+          newProducts: true,
+          promotions: true,
+          events: true,
+          blogPosts: true
+        }
+      };
+      
+      await subscribe(subscribeData);
+      if (!isAuthenticated) {
+        setEmail(""); // Only clear if not authenticated
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -70,24 +103,39 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">Subscribe</h3>
             <p className="text-gray-500 text-sm mb-4">Get the latest updates.</p>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                disabled={isSubmitting}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-600 disabled:bg-gray-100"
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full border border-indigo-600 text-indigo-600 px-4 py-2 rounded-full hover:bg-indigo-600 hover:text-white transition disabled:opacity-50"
-              >
-                {isSubmitting ? "Subscribing..." : "Subscribe →"}
-              </button>
-            </form>
+            {subscriptionStatus === 'subscribed' ? (
+              <div className="text-green-600 text-sm p-2 bg-green-50 rounded-lg">
+                You're subscribed to our newsletter!
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                {isAuthenticated ? (
+                  <input
+                    type="email"
+                    value={email}
+                    readOnly
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-50 cursor-not-allowed"
+                  />
+                ) : (
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-600 disabled:bg-gray-100"
+                  />
+                )}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full border border-indigo-600 text-indigo-600 px-4 py-2 rounded-full hover:bg-indigo-600 hover:text-white transition disabled:opacity-50"
+                >
+                  {isSubmitting ? "Subscribing..." : "Subscribe →"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 

@@ -12,19 +12,28 @@ export default function Headings() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('Fetching featured products...');
-        const response = await productApi.getFeaturedProducts();
+        console.log('Fetching top rated products...');
+        const response = await productApi.getTopRatedProducts();
         console.log('API Response:', response);
         
-        if (response.success && response.data) {
-          const featuredProducts = response.data.filter(product => 
-            product.flags?.isFeatured || product.flags?.isNew
-          );
-          console.log('Filtered Featured Products:', featuredProducts);
-          setProducts(featuredProducts);
+        // Check all possible formats the data might be in
+        let productData = [];
+        if (response?.data) {
+          productData = response.data;
+        } else if (Array.isArray(response)) {
+          productData = response;
+        }
+        
+        console.log('Processed product data:', productData);
+        
+        if (productData.length > 0) {
+          setProducts(productData);
         } else {
-          console.log('No products found in response');
-          setProducts([]);
+          // If still no products, try with featured instead as fallback
+          console.log('No top rated products found, fetching featured products as fallback');
+          const featuredResponse = await productApi.getFeaturedProducts();
+          const featuredData = featuredResponse?.data || featuredResponse || [];
+          setProducts(featuredData);
         }
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -43,7 +52,10 @@ export default function Headings() {
   // Format price helper
   const formatPrice = (price) => {
     if (!price) return '$0.00';
-    return `$${price.current.toFixed(2)}`;
+    if (typeof price === 'object' && price.current) {
+      return `$${price.current.toFixed(2)}`;
+    }
+    return `$${parseFloat(price).toFixed(2)}`;
   };
 
   if (loading) {
@@ -69,7 +81,7 @@ export default function Headings() {
     return (
       <div className="bg-white py-24">
         <div className="text-center text-gray-600">
-          No featured products available
+          No top rated products available
         </div>
       </div>
     );

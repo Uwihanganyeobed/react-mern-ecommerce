@@ -46,17 +46,7 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  const getFeaturedProduct = async (id) => {
-    try {
-      const response = await productApi.getFeaturedProduct(id);
-      console.log('Single Featured Product:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Featured Product Error:', error);
-      toast.error('Error loading featured product');
-      return null;
-    }
-  };
+
 
   // New Products
   const fetchNewProducts = async () => {
@@ -84,20 +74,22 @@ export const ProductProvider = ({ children }) => {
   };
 
   // Category Operations
-  const getProductsByCategory = async (category) => {
-    try {
-      setLoading(true);
-      const response = await productApi.getProductsByCategory(category);
-      console.log('Category Products:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Category Products Error:', error);
-      toast.error('Error loading category products');
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  };
+// Get Products by Category
+const getProductsByCategory = async (category) => {
+  try {
+    setLoading(true);
+    const response = await productApi.getProductsByCategory(category);
+    console.log('Category Products:', response.data);
+    setProducts(response.data);  // Update products state based on category
+    return response.data;
+  } catch (error) {
+    console.error('Error loading category products:', error);
+    toast.error('Error loading category products');
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getCategoryProduct = async (id) => {
     try {
@@ -110,6 +102,19 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
+    // Fetch categories
+    const fetchCategories = async () => {
+      try {
+        const response = await productApi.getCategories();
+        console.log('Categories:', response.data);
+        setCategories(response.data);
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast.error('Error loading categories');
+        return [];
+      }
+    };
   // Available & Top Rated Products
   const fetchAvailableProducts = async () => {
     try {
@@ -266,7 +271,6 @@ export const ProductProvider = ({ children }) => {
     // Methods
     fetchProducts,
     fetchFeaturedProducts,
-    getFeaturedProduct,
     fetchNewProducts,
     getNewProduct,
     getProductsByCategory,
