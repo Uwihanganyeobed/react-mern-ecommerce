@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { product as productApi } from '../services/api';
 import { toast } from 'react-toastify';
 
@@ -14,6 +14,7 @@ export const ProductProvider = ({ children }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [categories, setCategories] = useState([]);
+  const [error, setError] = useState(null);
 
   // Basic Product Operations
   const fetchProducts = async (page = 1) => {
@@ -73,51 +74,50 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-  // Category Operations
-// Category Operations
-const getProductsByCategory = async (category) => {
+  // Get products by category
+  const getProductsByCategory = useCallback(async (category) => {
+    try {
+      setLoading(true);
+      const response = await productApi.getProductsByCategory(category);
+      console.log('Category Products:', response.data);
+      setLoading(false);
+      return response.data;
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      return { success: false, data: [] };
+    }
+  }, []);
+
+// Get category product details
+const getCategoryProduct =  useCallback(async (id) => {
   try {
     setLoading(true);
-    const response = await productApi.getProductsByCategory(category);
-    console.log('Category Products:', response.data);
-    // Instead of overwriting products state, let's return the data
-    // and let the component handle it
+    const response = await productApi.getCategoryProduct();
+    console.log('Single Category Product:', response.data);
+    setLoading(false);
     return response.data;
-  } catch (error) {
-    console.error('Error loading category products:', error);
-    toast.error('Error loading category products');
-    return [];
-  } finally {
+  } catch (err) {
+    setError(err.message);
+    setLoading(false);
+    return { success: false, data: null };
+  }
+}, []);
+
+ // Fetch categories - this should be implemented to only run once
+ const fetchCategories = useCallback(async () => {
+  try {
+    setLoading(true);
+    const response = await productApi.getCategories();
+    console.log('Categories of products:', response.data);
+    setCategories(response.data);
+    setLoading(false);
+  } catch (err) {
+    setError(err.message);
     setLoading(false);
   }
-};
+}, []);
 
-const getCategoryProduct = async (id) => {
-  try {
-    const response = await productApi.getCategoryProduct(id);
-    console.log('Single Category Product:', response.data);
-    // This returns both product details and related products
-    return response.data;
-  } catch (error) {
-    console.error('Category Product Error:', error);
-    toast.error('Error loading product details');
-    return null;
-  }
-};
-
-  // Add this function to your ProductProvider component
-const fetchCategories = async () => {
-    try {
-      const response = await productApi.getCategories(); // Adjust this to match your API service
-      console.log('Categories:', response.data);
-      setCategories(response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Error loading categories');
-      return [];
-    } 
-  };
 
   // Available & Top Rated Products
   const fetchAvailableProducts = async () => {
@@ -270,11 +270,10 @@ const fetchCategories = async () => {
     newProducts,
     availableProducts,
     topRatedProducts,
+    categories,
     loading,
     currentPage,
     totalPages,
-    categories,
-
     // Methods
     fetchProducts,
     fetchFeaturedProducts,
