@@ -64,6 +64,7 @@ const product = {
   getAvailableProducts: () => api.get('/products/available'),
   getTopRatedProducts: () => api.get('/products/top-rated'),
   getPaginatedProducts: (page) => api.get(`/products/page/${page}`),
+  getCategories: () => api.get('/products/categories'),
   getBlogProduct: (id) => api.get(`/products/blog/${id}`),
   getNewProduct: (id) => api.get(`/products/new/${id}`),
   getNewProducts: () => api.get('/products/new'),

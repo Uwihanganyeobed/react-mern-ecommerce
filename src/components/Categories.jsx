@@ -5,7 +5,12 @@ import { categorySettings as settings } from "../utils/slickSettings";
 import { useProducts } from "../context/productContext";
 
 export default function Categories() {
-  const { categories, loading } = useProducts();
+  const { categories, fetchCategories, loading } = useProducts();
+  
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
   if (loading || !categories || categories.length === 0) {
     return (
       <div className="bg-gray-100">
@@ -30,22 +35,27 @@ export default function Categories() {
         <h2 className="text-2xl font-bold text-gray-900">Shop by Categories</h2>
         <div className="mt-6">
           <Slider {...settings}>
-            {categories.map((cat) => (
-              <div key={cat._id} className="p-2">
-                <Link to={`/category/${cat._id}`}>
-                  <img 
-                    className="w-full h-64 object-cover rounded-lg" 
-                    src={cat.image || "/path/to/default-image.jpg"} 
-                    alt={cat.category} 
-                  />
-                </Link>
-                <h3 className="mt-2 text-center font-medium">{cat.category}</h3>
-              </div>
-            ))}
+          {categories
+  .filter((cat) => cat?.category) // Only include categories with valid 'category' property
+  .map((cat) => (
+    <div key={cat._id} className="p-2">
+      <Link to={`/category/${cat.category.toLowerCase()}`}>
+        <div className="relative h-64 overflow-hidden rounded-lg group">
+          <img
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            src={cat.image || "/path/to/default-image.jpg"}
+            alt={cat.category}
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
+        </div>
+        <h3 className="mt-2 text-center font-medium text-gray-900">{cat.category}</h3>
+      </Link>
+    </div>
+  ))}
+
           </Slider>
         </div>
       </div>
     </div>
   );
-  
 }

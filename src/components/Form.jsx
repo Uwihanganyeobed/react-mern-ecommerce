@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { formSchema } from "../utils/validations";
-import { z } from "zod";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from '../context/authContext';

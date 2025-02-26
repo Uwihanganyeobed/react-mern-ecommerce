@@ -74,13 +74,14 @@ export const ProductProvider = ({ children }) => {
   };
 
   // Category Operations
-// Get Products by Category
+// Category Operations
 const getProductsByCategory = async (category) => {
   try {
     setLoading(true);
     const response = await productApi.getProductsByCategory(category);
     console.log('Category Products:', response.data);
-    setProducts(response.data);  // Update products state based on category
+    // Instead of overwriting products state, let's return the data
+    // and let the component handle it
     return response.data;
   } catch (error) {
     console.error('Error loading category products:', error);
@@ -91,30 +92,33 @@ const getProductsByCategory = async (category) => {
   }
 };
 
-  const getCategoryProduct = async (id) => {
+const getCategoryProduct = async (id) => {
+  try {
+    const response = await productApi.getCategoryProduct(id);
+    console.log('Single Category Product:', response.data);
+    // This returns both product details and related products
+    return response.data;
+  } catch (error) {
+    console.error('Category Product Error:', error);
+    toast.error('Error loading product details');
+    return null;
+  }
+};
+
+  // Add this function to your ProductProvider component
+const fetchCategories = async () => {
     try {
-      const response = await productApi.getCategoryProduct(id);
-      console.log('Single Category Product:', response.data);
+      const response = await productApi.getCategories(); // Adjust this to match your API service
+      console.log('Categories:', response.data);
+      setCategories(response.data);
       return response.data;
     } catch (error) {
-      console.error('Category Product Error:', error);
-      return null;
-    }
+      console.error('Error fetching categories:', error);
+      toast.error('Error loading categories');
+      return [];
+    } 
   };
 
-    // Fetch categories
-    const fetchCategories = async () => {
-      try {
-        const response = await productApi.getCategories();
-        console.log('Categories:', response.data);
-        setCategories(response.data);
-        return response.data;
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        toast.error('Error loading categories');
-        return [];
-      }
-    };
   // Available & Top Rated Products
   const fetchAvailableProducts = async () => {
     try {
@@ -139,6 +143,7 @@ const getProductsByCategory = async (category) => {
       return [];
     }
   };
+
 
   // Product Details & Related
   const getProductById = async (id) => {
@@ -248,7 +253,9 @@ const getProductsByCategory = async (category) => {
         fetchFeaturedProducts(),
         fetchNewProducts(),
         fetchAvailableProducts(),
-        fetchTopRatedProducts()
+        fetchTopRatedProducts(),
+        fetchCategories(),
+        // getProductReviews(1) // Fetch reviews for the first product to populate initial state
       ]);
       console.log('Product Data Initialization Complete');
     };
@@ -273,6 +280,7 @@ const getProductsByCategory = async (category) => {
     fetchFeaturedProducts,
     fetchNewProducts,
     getNewProduct,
+    fetchCategories,
     getProductsByCategory,
     getCategoryProduct,
     fetchAvailableProducts,

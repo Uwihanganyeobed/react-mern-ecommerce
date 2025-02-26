@@ -1,18 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/authContext';
 
 const Contact = () => {
-  // const { user, isAuthenticated } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   
   const [formData, setFormData] = useState({
-    name:'obed',
+    name: '',
     phone: '',
     message: ''
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set the formData name field with the logged-in user's name if it exists
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      setFormData((prevData) => ({
+        ...prevData,
+        name: user.name
+      }));
+    }
+  }, [isLoggedIn, user]);
 
   // Validation schema
   const validationSchema = z.object({
@@ -45,7 +56,7 @@ const Contact = () => {
       setIsSubmitting(true);
       setTimeout(() => {
         toast.success('Message sent successfully!');
-        setFormData({ name: 'obed', phone: '', message: '' });
+        setFormData({ name: '', phone: '', message: '' });
         setIsSubmitting(false);
       }, 1000);
     } else {
@@ -108,7 +119,6 @@ const Contact = () => {
                   onChange={handleChange}
                   className={`w-full h-12 pl-4 text-lg font-normal text-gray-600 placeholder-gray-400 shadow-sm bg-transparent border rounded-full focus:outline-none ${errors.name ? 'border-red-500' : 'border-gray-200'}`}
                   placeholder="Your Name"
-                  disabled={true}
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>

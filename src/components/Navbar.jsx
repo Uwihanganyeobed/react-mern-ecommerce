@@ -10,7 +10,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext';
-import { useProducts } from '../context/productContext';
 import { useSearch } from '../context/searchContext';
 
 export default function Navbar() {
