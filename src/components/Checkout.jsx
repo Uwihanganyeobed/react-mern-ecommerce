@@ -6,6 +6,41 @@ export default function Checkout() {
   )
 }
 
+/*
+Exactly! Here's a step-by-step breakdown:
+
+🛒 1. Cart Page:
+Display products added to the cart.
+Show a "Proceed to Checkout" button.
+📦 2. Checkout Page:
+Collect User Information:
+
+Shipping address, billing address, and contact details.
+Payment Method:
+
+Allow users to choose and input payment details.
+Review Order:
+
+Show a summary of items, prices, and total cost.
+Create Order Button:
+
+Add a "Place Order" or "Create Order" button.
+🔥 3. On "Create Order" Button Click:
+Validate the form inputs.
+Send a request to the backend to create an order with the provided info.
+Create the order with a status like "Pending" or "Awaiting Payment".
+If using payment integration (e.g., Stripe, PayPal), handle payment before finalizing the order.
+✅ 4. Order Confirmation:
+Once the order is successfully created and payment is confirmed, redirect to an Order Confirmation page.
+Update the order status to "Confirmed" or "Processing".
+🚦 Flow Example:
+Cart Page: Items in cart ➡️
+Checkout Page: Fill info, review order ➡️
+Create Order Button: Generate order in the backend ➡️
+Payment (if needed): Process payment ➡️
+Confirmation Page: Show order success message
+*/
+
 // import { countires } from "../utils/items";
 // import { useForm } from "react-hook-form";
 // import { zodResolver } from "@hookform/resolvers/zod";

@@ -29,7 +29,7 @@ const MainPage = () => {
       <Headings />
       <Featured />
       {/* <CategoryProducts /> */}
-      <Categories/>
+      <Categories />
       <NewProducts />
     </div>
   );

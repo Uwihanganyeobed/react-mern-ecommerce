@@ -47,8 +47,6 @@ export const ProductProvider = ({ children }) => {
     }
   };
 
-
-
   // New Products
   const fetchNewProducts = async () => {
     try {
@@ -89,35 +87,34 @@ export const ProductProvider = ({ children }) => {
     }
   }, []);
 
-// Get category product details
-const getCategoryProduct =  useCallback(async (id) => {
-  try {
-    setLoading(true);
-    const response = await productApi.getCategoryProduct();
-    console.log('Single Category Product:', response.data);
-    setLoading(false);
-    return response.data;
-  } catch (err) {
-    setError(err.message);
-    setLoading(false);
-    return { success: false, data: null };
-  }
-}, []);
+  // Get category product details
+  const getCategoryProduct = useCallback(async (id) => {
+    try {
+      setLoading(true);
+      const response = await productApi.getCategoryProduct(id);
+      console.log('Single Category Product:', response.data);
+      setLoading(false);
+      return response.data;
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+      return { success: false, data: null };
+    }
+  }, []);
 
- // Fetch categories - this should be implemented to only run once
- const fetchCategories = useCallback(async () => {
-  try {
-    setLoading(true);
-    const response = await productApi.getCategories();
-    console.log('Categories of products:', response.data);
-    setCategories(response.data);
-    setLoading(false);
-  } catch (err) {
-    setError(err.message);
-    setLoading(false);
-  }
-}, []);
-
+  // Fetch categories - this should be implemented to only run once
+  const fetchCategories = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await productApi.getCategories();
+      console.log('Categories of products:', response.data);
+      setCategories(response.data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }, []);
 
   // Available & Top Rated Products
   const fetchAvailableProducts = async () => {
@@ -143,7 +140,6 @@ const getCategoryProduct =  useCallback(async (id) => {
       return [];
     }
   };
-
 
   // Product Details & Related
   const getProductById = async (id) => {
@@ -244,6 +240,22 @@ const getCategoryProduct =  useCallback(async (id) => {
     }
   };
 
+  const fetchFilteredProducts = async (filters) => {
+    try {
+      setLoading(true);
+      const response = await productApi.searchProducts(filters);
+      console.log('Filtered Products:', response.data);
+      setProducts(response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Filter Products Error:', error);
+      toast.error('Error filtering products');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Initialize data
   useEffect(() => {
     const initializeData = async () => {
@@ -277,6 +289,7 @@ const getCategoryProduct =  useCallback(async (id) => {
     // Methods
     fetchProducts,
     fetchFeaturedProducts,
+    fetchFilteredProducts,
     fetchNewProducts,
     getNewProduct,
     fetchCategories,
@@ -307,4 +320,4 @@ export const useProducts = () => {
     throw new Error('useProducts must be used within a ProductProvider');
   }
   return context;
-}; 
+};

@@ -19,6 +19,7 @@ import { SubscriberProvider } from './context/subscriberContext';
 
 export default function App() {
   return (
+    <BrowserRouter>
     <AuthProvider>
       <UserProvider>
         <ProductProvider>
@@ -29,7 +30,6 @@ export default function App() {
                   <NotificationProvider>
                     <FeedbackProvider>
                       <SubscriberProvider>
-                        <BrowserRouter>
                           <SearchProvider>
                             <div className="flex flex-col min-h-screen">
                               <Navbar />
@@ -40,7 +40,6 @@ export default function App() {
                               <ToastContainer />
                             </div>
                           </SearchProvider>
-                        </BrowserRouter>
                       </SubscriberProvider>
                     </FeedbackProvider>
                   </NotificationProvider>
@@ -51,5 +50,7 @@ export default function App() {
         </ProductProvider>
       </UserProvider>
     </AuthProvider>
+    </BrowserRouter>
+
   );
 }

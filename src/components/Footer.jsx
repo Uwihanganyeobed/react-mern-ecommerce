@@ -8,7 +8,7 @@ const Footer = () => {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { subscribe, subscriptionStatus } = useSubscriber();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   
   // Update email when user authentication changes
   useEffect(() => {
@@ -17,7 +17,7 @@ const Footer = () => {
     } else {
       setEmail("");
     }
-  }, [user, isAuthenticated]);
+  }, [user, isLoggedIn]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,7 +41,7 @@ const Footer = () => {
       };
       
       await subscribe(subscribeData);
-      if (!isAuthenticated) {
+      if (!isLoggedIn) {
         setEmail(""); // Only clear if not authenticated
       }
     } catch (error) {
@@ -109,7 +109,7 @@ const Footer = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                {isAuthenticated ? (
+                {isLoggedIn ? (
                   <input
                     type="email"
                     value={email}

@@ -57,17 +57,26 @@ const user = {
 
 // Product endpoints
 const product = {
+  /*----------------------------------------*/ 
   searchProducts: (query) => api.get('/products/search', { params: query }),
+  /*featured*/ 
   getFeaturedProducts: () => api.get('/products/featured'),
+  getFeaturedProduct: (id) => api.get(`/products/featured/${id}`),
+  /*category*/ 
   getProductsByCategory: (category) => api.get(`/products/category/${category}`),
+  getCategories: () => api.get('/products/categories'),
   getCategoryProduct: (id) => api.get(`/products/product/${id}`),
+  /*featured*/ 
   getAvailableProducts: () => api.get('/products/available'),
   getTopRatedProducts: () => api.get('/products/top-rated'),
   getPaginatedProducts: (page) => api.get(`/products/page/${page}`),
-  getCategories: () => api.get('/products/categories'),
   getBlogProduct: (id) => api.get(`/products/blog/${id}`),
+  
+  /*new*/ 
   getNewProduct: (id) => api.get(`/products/new/${id}`),
   getNewProducts: () => api.get('/products/new'),
+
+  /*featured*/ 
   sortProducts: (sortParams) => api.get('/products/sort', { params: sortParams }),
   filterProductsByPriceRange: (minPrice, maxPrice) => api.get('/products/filter/price', { params: { minPrice, maxPrice } }),
   

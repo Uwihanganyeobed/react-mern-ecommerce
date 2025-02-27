@@ -11,20 +11,23 @@ import { ProductProvider } from "./context/productContext";
 import { SearchProvider } from "./context/searchContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
+  <React.StrictMode>
     <AuthProvider>
-      <SearchProvider>
-        <ProductProvider>
-          <CartProvider>
-            <OrderProvider>
-              <CheckoutProvider>
+      <CartProvider>
+        <OrderProvider>
+          <CheckoutProvider>
+            <ProductProvider>
+              <SearchProvider>
                 <App />
-              </CheckoutProvider>
-            </OrderProvider>
-          </CartProvider>
-        </ProductProvider>
-      </SearchProvider>
+              </SearchProvider>
+            </ProductProvider>
+          </CheckoutProvider>
+        </OrderProvider>
+      </CartProvider>
     </AuthProvider>
+  </React.StrictMode>
 );
 
 reportWebVitals();

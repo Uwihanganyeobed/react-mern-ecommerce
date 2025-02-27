@@ -3,7 +3,7 @@ import { useAuth } from '../context/authContext';
 import { ClipLoader } from 'react-spinners';
 
 const ProtectedRoute = ({ children, allowedRoles = ['User', 'Admin'] }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isLoggedIn, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children, allowedRoles = ['User', 'Admin'] }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isLoggedIn) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

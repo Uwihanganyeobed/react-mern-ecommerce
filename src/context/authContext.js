@@ -9,27 +9,44 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Update the useEffect to properly handle auth state
   useEffect(() => {
     const token = localStorage.getItem('token');
+    
+    // Set loading to false if no token exists
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    
+    // Set auth token immediately
+    setAuthToken(token);
+    
     const checkAuth = async () => {
-      if (token) {
-        setAuthToken(token);
-        try {
-          const response = await auth.getCurrentUser();
-          if (response.data) {
-            setUser(response.data);
-            setIsLoggedIn(true);
-          }
-        } catch (error) {
-          console.error('Auth check failed:', error);
+      try {
+        const response = await auth.getCurrentUser();
+        
+        // Debug the response
+        console.log('Current user response:', response);
+        
+        if (response && response.data) {
+          // Set user data from response
+          setUser(response.data);
+          setIsLoggedIn(true);
+        } else {
+          // Handle case where response exists but doesn't have expected data
+          console.warn('User data not found in response:', response);
           localStorage.removeItem('token');
           removeAuthToken();
         }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        localStorage.removeItem('token');
+        removeAuthToken();
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
+  
     checkAuth();
   }, []);
 
@@ -37,14 +54,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await auth.login(credentials);
       const { token, user: userData } = response.data;
-      
-      localStorage.setItem('token', token);
+
+      localStorage.setItem("token", token);
       setAuthToken(token);
-      
+
       // Set user data immediately from login response
       setUser(userData);
       setIsLoggedIn(true);
-      
+
       toast.success(`Welcome back, ${userData.name}!`);
       return true;
     } catch (error) {
@@ -56,7 +73,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await auth.register(userData);
-      
+
       if (response.data.success) {
         toast.success(
           "Registration successful! Please check your email to verify your account.",
@@ -77,9 +94,9 @@ export const AuthProvider = ({ children }) => {
     try {
       await auth.logout(); // Call logout endpoint
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       removeAuthToken();
       setUser(null);
       setIsLoggedIn(false);
@@ -92,7 +109,9 @@ export const AuthProvider = ({ children }) => {
       await auth.forgotPassword(email);
       toast.success("Password reset instructions sent to your email");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to send reset email");
+      toast.error(
+        error.response?.data?.message || "Failed to send reset email"
+      );
       throw error;
     }
   };
@@ -110,16 +129,17 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (token) => {
     try {
       const response = await auth.verifyEmail(token);
-      
+
       // Check if the response contains data and success status
-      if (response.data && response.data.isEmailVerified) {  // or whatever success flag your API returns
+      if (response.data && response.data.isEmailVerified) {
+        // or whatever success flag your API returns
         toast.success("Email verified successfully! Please login to continue.");
         return true;
       }
       return false;
     } catch (error) {
       // Don't show toast here since VerifyEmail component will handle the UI
-      console.error('Verification error:', error);
+      console.error("Verification error:", error);
       return false;
     }
   };
@@ -129,7 +149,9 @@ export const AuthProvider = ({ children }) => {
       await auth.resendVerification();
       toast.success("Verification email sent!");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to resend verification");
+      toast.error(
+        error.response?.data?.message || "Failed to resend verification"
+      );
     }
   };
 
@@ -143,7 +165,7 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     verifyEmail,
-    resendVerification
+    resendVerification,
   };
 
   return (
