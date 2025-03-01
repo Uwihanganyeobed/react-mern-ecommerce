@@ -6,7 +6,6 @@ import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./context/authContext";
 import { CartProvider } from "./context/cartContext";
 import { OrderProvider } from "./context/orderContext";
-import { CheckoutProvider } from "./context/checkoutContext";
 import { ProductProvider } from "./context/productContext";
 import { SearchProvider } from "./context/searchContext";
 
@@ -17,13 +16,11 @@ root.render(
     <AuthProvider>
       <CartProvider>
         <OrderProvider>
-          <CheckoutProvider>
             <ProductProvider>
               <SearchProvider>
                 <App />
               </SearchProvider>
             </ProductProvider>
-          </CheckoutProvider>
         </OrderProvider>
       </CartProvider>
     </AuthProvider>

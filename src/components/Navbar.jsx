@@ -11,10 +11,12 @@ import { navigation } from "../utils/items";
 import { useAuth } from '../context/authContext';
 import { useCart } from '../context/cartContext';
 import { useSearch } from '../context/searchContext';
+import { useOrders } from "../context/orderContext";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { user, isLoggedIn, logout, loading } = useAuth();
+  const { orders } = useOrders();
   const { cartItems } = useCart();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -317,6 +319,25 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
+
+            {isLoggedIn && (
+              <div className="flex items-center space-x-4">
+                <Link 
+                  to="/order-history"
+                  className="relative flex items-center"
+                >
+                  <span className="sr-only">Your Orders</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  {orders.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {orders.length}
+                    </span>
+                  )}
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>

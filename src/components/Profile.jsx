@@ -5,10 +5,14 @@ import { ClipLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { auth } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { useOrders } from '../context/orderContext';
 
 const Profile = () => {
   const { user, resendVerification } = useAuth();
   const { updateProfile } = useUser();
+  const { orders } = useOrders();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -21,6 +25,8 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const recentOrders = orders.slice(0, 5); // Get last 5 orders
 
   // Get user initials
   const getInitials = (name) => {
@@ -271,6 +277,60 @@ const Profile = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
+          <button
+            onClick={() => navigate('/order-history')}
+            className="text-sm text-indigo-600 hover:text-indigo-500"
+          >
+            View All Orders
+          </button>
+        </div>
+
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <ul className="divide-y divide-gray-200">
+            {recentOrders.map(order => (
+              <li key={order._id}>
+                <button
+                  onClick={() => navigate(`/order/${order._id}`)}
+                  className="block hover:bg-gray-50 w-full text-left"
+                >
+                  <div className="px-4 py-4 sm:px-6">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-indigo-600 truncate">
+                        Order #{order.orderNumber}
+                      </div>
+                      <div className="ml-2 flex-shrink-0 flex">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-2 sm:flex sm:justify-between">
+                      <div className="sm:flex">
+                        <p className="flex items-center text-sm text-gray-500">
+                          {order.items.length} items
+                        </p>
+                      </div>
+                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                        <p>
+                          Placed on {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </div>

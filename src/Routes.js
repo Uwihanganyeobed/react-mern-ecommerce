@@ -3,7 +3,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Form from "./components/Form";
 import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
-import OrderHistroy from "./components/OrderHistroy";
 import OrderConfirmation from "./components/OrderConfirmation";
 import MonoProduct from "./components/MonoProduct";
 import Reviews from "./components/Reviews";
@@ -21,6 +20,8 @@ import Profile from "./components/Profile";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import Categories from "./components/Categories";
+import OrderDetails from "./components/OrderDetails";
+import OrderHistory from "./components/OrderHistory";
 
 // Main component definition
 const MainPage = () => {
@@ -72,19 +73,19 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/order"
+      <Route 
+        path="/order-confirmation"
         element={
           <ProtectedRoute>
-            <OrderHistroy />
+            <OrderConfirmation />
           </ProtectedRoute>
         }
       />
       <Route
-        path="/success"
+        path="/order-history"
         element={
           <ProtectedRoute>
-            <OrderConfirmation />
+            <OrderHistory />
           </ProtectedRoute>
         }
       />
@@ -102,6 +103,16 @@ export default function AppRoutes() {
       <Route path="/featured/:id" element={<MonoProduct />} />
       <Route path="/new/:id" element={<MonoProduct />} />
       <Route path="/category/:id" element={<MonoProduct />} />
+
+      {/* Order Details Route */}
+      <Route
+        path="/order/:id"
+        element={
+          <ProtectedRoute>
+            <OrderDetails />
+          </ProtectedRoute>
+        }
+      />
 
       {/* 404 Route - Must be last */}
       <Route path="*" element={<NotFound />} />

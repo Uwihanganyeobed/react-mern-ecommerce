@@ -27,82 +27,60 @@ export const formSchema = (type) => {
   });
 };
 
-// Update checkout schema to be more specific and handle different payment methods
-export const checkoutSchema = z.object({
-  // Contact Information
-  email: z.string().email("Invalid email address"),
 
-  // Shipping Information
+// Simplified checkout schema - flattened structure
+export const checkoutSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
   lastName: z.string().min(2, "Last name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string()
+    .min(10, "Phone number must be at least 10 digits")
+    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"),
+  company: z.string().optional(),
   address: z.string().min(5, "Please enter a valid address"),
   city: z.string().min(2, "City is required"),
   country: z.string().min(2, "Country is required"),
   state: z.string().min(2, "State/Province is required"),
   postalCode: z.string().min(4, "Please enter a valid postal code"),
-  phone: z.string()
-    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"),
-
-  // Optional company name
-  company: z.string().optional(),
-
-  // Delivery Method
-  deliveryMethod: z.enum(["standard", "express"], {
-    errorMap: () => ({ message: "Please select a delivery method" })
-  }),
-
-  // Payment Method
-  paymentMethod: z.enum(["credit_card", "paypal", "digital_wallet"], {
-    errorMap: () => ({ message: "Please select a payment method" })
-  }),
-
-  // Credit Card Details - only required if paymentMethod is credit_card
-  cardDetails: z.object({
-    cardNumber: z.string()
-      .regex(/^\d{16}$/, "Please enter a valid 16-digit card number")
-      .optional(),
-    cardName: z.string()
-      .min(2, "Please enter the name on card")
-      .optional(),
-    expirationDate: z.string()
-      .regex(/^(0[1-9]|1[0-2])\/([0-9]{2})$/, "Please enter a valid expiry date (MM/YY)")
-      .optional(),
-    cvc: z.string()
-      .regex(/^\d{3,4}$/, "Please enter a valid CVC")
-      .optional(),
-  }).superRefine((data, ctx) => {
-    // If payment method is credit_card, all card details are required
-    if (ctx.parent.paymentMethod === "credit_card") {
-      if (!data.cardNumber) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Card number is required",
-          path: ["cardNumber"],
-        });
-      }
-      if (!data.cardName) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Name on card is required",
-          path: ["cardName"],
-        });
-      }
-      if (!data.expirationDate) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Expiration date is required",
-          path: ["expirationDate"],
-        });
-      }
-      if (!data.cvc) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "CVC is required",
-          path: ["cvc"],
-        });
-      }
+  deliveryMethod: z.enum(["standard", "express"]),
+  paymentMethod: z.enum(["credit_card", "paypal", "digital_wallet"]),
+  
+  // Card details with specific validation messages
+  cardNumber: z.string().optional(),
+  cardName: z.string().optional(),
+  expirationDate: z.string().optional(),
+  cvc: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.paymentMethod === 'credit_card') {
+    if (!data.cardNumber || !data.cardNumber.match(/^\d{16}$/)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Card number must be 16 digits",
+        path: ["cardNumber"]
+      });
     }
-  }),
+    if (!data.cardName || data.cardName.length < 3) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Cardholder name must be at least 3 characters",
+        path: ["cardName"]
+      });
+    }
+    if (!data.expirationDate || !data.expirationDate.match(/^(0[1-9]|1[0-2])\/([0-9]{2})$/)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid expiration date (MM/YY)",
+        path: ["expirationDate"]
+      });
+    }
+    if (!data.cvc || !data.cvc.match(/^\d{3,4}$/)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "CVC must be 3 or 4 digits",
+        path: ["cvc"]
+      });
+    }
+  }
 });
 
 // Helper function to validate checkout data
@@ -191,4 +169,53 @@ export const validateConfirmPassword = (password, confirmPassword) => {
   if (!confirmPassword) return "Please confirm your password";
   if (password !== confirmPassword) return "Passwords do not match";
   return "";
+};
+
+export const orderSchema = z.object({
+  shippingAddress: z.object({
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email("Invalid email format"),
+    phone: z.string()
+      .regex(/^\+\d{1,3}\d{9,}$/, "Invalid phone number format"),
+    address: z.string().min(5, "Address must be at least 5 characters"),
+    city: z.string().min(2, "City must be at least 2 characters"),
+    state: z.string().min(2, "State must be at least 2 characters"),
+    country: z.string().min(2, "Country must be at least 2 characters"),
+    postalCode: z.string().min(4, "Postal code must be at least 4 characters"),
+    company: z.string().optional()
+  }),
+  paymentMethod: z.enum(["credit_card", "paypal", "digital_wallet"]),
+  items: z.array(z.object({
+    product: z.object({
+      _id: z.string(),
+      title: z.string(),
+      price: z.object({
+        current: z.number()
+      }).or(z.number()),  // Allow both object and direct number
+      stock: z.number().optional()  // Make stock optional
+    }),
+    quantity: z.number().min(1),
+    variant: z.object({
+      color: z.string().optional(),
+      size: z.string().optional()
+    }).optional()
+  })).min(1, "Order must contain at least one item"),
+  total: z.number().min(0)
+});
+
+export const validateOrderData = (data) => {
+  try {
+    const validatedData = orderSchema.parse(data);
+    return { success: true, data: validatedData };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errors = error.errors.reduce((acc, err) => {
+        acc[err.path.join('.')] = err.message;
+        return acc;
+      }, {});
+      return { success: false, errors };
+    }
+    return { success: false, errors: { general: 'Validation failed' } };
+  }
 };

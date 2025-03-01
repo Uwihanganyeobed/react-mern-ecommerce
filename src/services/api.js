@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const API_URL = 'http://localhost:5000';
-const API_URL = 'https://react-mern-back-end.onrender.com';
+const API_URL = 'http://localhost:5000';
+// const API_URL = 'https://react-mern-back-end.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -99,8 +99,9 @@ const cart = {
 const order = {
   createOrder: (orderData) => api.post('/orders', orderData),
   getMyOrders: () => api.get('/orders/my-orders'),
-  getOrderById: (id) => api.get(`/orders/${id}`),
-  cancelOrder: (id) => api.put(`/orders/${id}/cancel`)
+  getOrderById: (orderId) => api.get(`/orders/${orderId}`),
+  cancelOrder: (orderId) => api.put(`/orders/${orderId}/cancel`),
+  updateOrderStatus: (orderId, status) => api.patch(`/orders/${orderId}/status`, { status })
 };
 
 // Coupon endpoints

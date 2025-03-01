@@ -1,41 +1,51 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { cart as cartApi } from "../services/api";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/authContext"; // Assuming you have an auth context
 
 const CartContext = createContext(null);
-
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cartTotal, setCartTotal] = useState(0);
   const [itemCount, setItemCount] = useState(0);
+  
+  // Get auth context to access user state
+  const { user, isLoggedIn } = useAuth();
 
   // Safely update cart totals with defensive checks
-const updateCartTotals = (items) => {
-  // Guard against undefined or non-array items
-  if (!items || !Array.isArray(items)) {
-    setCartTotal(0);
-    setItemCount(0);
-    return;
-  }
+  const updateCartTotals = (items) => {
+    // Guard against undefined or non-array items
+    if (!items || !Array.isArray(items)) {
+      setCartTotal(0);
+      setItemCount(0);
+      return;
+    }
 
-  // Safely calculate total price with fallbacks for missing data
-  const total = items.reduce((sum, item) => {
-    const price = Number(item?.product?.price?.current) || 0;
-    const quantity = Number(item?.quantity) || 0;
-    return sum + (price * quantity);
-  }, 0);
+    // Safely calculate total price with fallbacks for missing data
+    const total = items.reduce((sum, item) => {
+      const price = Number(item?.product?.price?.current) || 0;
+      const quantity = Number(item?.quantity) || 0;
+      return sum + (price * quantity);
+    }, 0);
 
-  // Safely calculate item count with fallback for missing quantity
-  const count = items.reduce((sum, item) => {
-    return sum + (Number(item?.quantity) || 0);
-  }, 0);
+    // Safely calculate item count with fallback for missing quantity
+    const count = items.reduce((sum, item) => {
+      return sum + (Number(item?.quantity) || 0);
+    }, 0);
 
-  setCartTotal(total);
-  setItemCount(count);
-};
+    setCartTotal(total);
+    setItemCount(count);
+  };
 
   const fetchCart = async () => {
+    // Only fetch cart if user is authenticated
+    if (!isLoggedIn) {
+      setCartItems([]);
+      updateCartTotals([]);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await cartApi.getCart();
@@ -74,6 +84,12 @@ const updateCartTotals = (items) => {
   };
 
   const addToCart = async (productId, quantity = 1, options = {}) => {
+    // Prevent adding to cart if not authenticated
+    if (!isLoggedIn) {
+      toast.error('Please log in to add items to your cart');
+      return;
+    }
+
     if (!productId) {
       toast.error('Product ID is required');
       return;
@@ -122,6 +138,11 @@ const updateCartTotals = (items) => {
   };
 
   const updateQuantity = async (itemId, quantity) => {
+    if (!isLoggedIn) {
+      toast.error('Please log in to update your cart');
+      return;
+    }
+
     if (!itemId) {
       toast.error("Item ID is required");
       return;
@@ -170,6 +191,11 @@ const updateCartTotals = (items) => {
   };
 
   const removeItem = async (itemId) => {
+    if (!isLoggedIn) {
+      toast.error('Please log in to remove items from your cart');
+      return;
+    }
+
     if (!itemId) {
       toast.error("Item ID is required");
       return;
@@ -201,6 +227,13 @@ const updateCartTotals = (items) => {
   };
 
   const clearCart = async () => {
+    if (!isLoggedIn) {
+      // If not authenticated, just clear local state
+      setCartItems([]);
+      updateCartTotals([]);
+      return;
+    }
+
     try {
       setLoading(true);
       await cartApi.clearCart();
@@ -225,9 +258,33 @@ const updateCartTotals = (items) => {
     }
   };
 
+  // Function to handle logout
+  const handleLogout = () => {
+    // Clear cart data when user logs out
+    setCartItems([]);
+    updateCartTotals([]);
+  };
+
+  // Effect to clear cart when user logs out
+  useEffect(() => {
+    if (!isLoggedIn) {
+      handleLogout();
+    }
+  }, [isLoggedIn]);
+
+  // Effect to fetch cart when user logs in
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      fetchCart();
+    }
+  }, [isLoggedIn, user]);
+
   // Initialize cart on component mount
   useEffect(() => {
-    fetchCart();
+    // Only fetch cart if user is authenticated
+    if (isLoggedIn) {
+      fetchCart();
+    }
   }, []);
 
   return (
@@ -242,6 +299,7 @@ const updateCartTotals = (items) => {
         removeItem,
         clearCart,
         fetchCart,
+        handleLogout,
       }}
     >
       {children}

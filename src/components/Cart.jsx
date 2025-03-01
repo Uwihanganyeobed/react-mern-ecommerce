@@ -1,6 +1,7 @@
-// Cart.jsx - Updated to match API response structure
+// Cart.jsx - Updated to handle authentication
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/cartContext';
+import { useAuth } from '../context/authContext'; // Assuming you have an auth context
 
 export default function Cart() {
   const { 
@@ -10,6 +11,8 @@ export default function Cart() {
     updateQuantity, 
     removeItem 
   } = useCart();
+  
+  const { isLoggedIn } = useAuth();
 
   // Handle quantity update
   const handleUpdateQuantity = (item, newQuantity) => {
@@ -17,6 +20,26 @@ export default function Cart() {
       updateQuantity(item._id, newQuantity);
     }
   };
+
+  // Show login message if not authenticated
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+          <h1 className="text-2xl font-bold text-gray-900 p-6">Shopping Cart</h1>
+          <div className="py-12 text-center">
+            <p className="text-gray-500 mb-6">Please log in to view your cart</p>
+            <Link 
+              to="/login" 
+              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded"
+            >
+              Log In
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
