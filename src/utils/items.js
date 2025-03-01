@@ -89,3 +89,10 @@ export const aboutStats = [
   { value: "200+", label: "Products Offered" },
   { value: "1000+", label: "Satisfied Customers" }
 ];
+
+export const footerSocialWebsites = [
+  { id: 1, name: "Facebook", href: "https://www.facebook.com/your-facebook-page" },
+  { id: 2, name: "Instagram", href: "https://www.instagram.com/your-instagram-page" },
+  { id: 3, name: "Twitter", href: "https://www.twitter.com/your-twitter-page" },
+  { id: 4, name: "Linkedin", href: "https://www.linkedin.com/your-linkedin-page" },
+];
