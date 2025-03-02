@@ -1,29 +1,24 @@
 import React, { useEffect } from "react";
-import Slider from "react-slick";
 import { Link } from "react-router-dom";
-import { categorySettings as settings } from "../utils/slickSettings";
 import { useProducts } from "../context/productContext";
+import Skeleton from "react-loading-skeleton";
 
 export default function Categories() {
   const { categories, fetchCategories, loading } = useProducts();
-  
+
   useEffect(() => {
     fetchCategories();
-  }, []); // Remove fetchCategories from dependency array to prevent infinite loop
-  
-  // Loading state
-  if (loading || !categories || categories.length === 0) {
+  }, [fetchCategories]);
+
+  if (loading) {
     return (
-      <div className="bg-gray-100">
+      <div className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Shop by Categories
-          </h2>
-          <div className="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-            {[1, 2, 3, 4].map((index) => (
-              <div key={index} className="animate-pulse">
-                <div className="w-full h-64 bg-gray-300 rounded-lg"></div>
-                <div className="mt-2 h-4 bg-gray-300 rounded w-1/2 mx-auto"></div>
+          <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+            {[1, 2, 3].map((index) => (
+              <div key={index} className="group">
+                <Skeleton height={200} />
+                <Skeleton width={100} className="mt-4" />
               </div>
             ))}
           </div>
@@ -31,41 +26,64 @@ export default function Categories() {
       </div>
     );
   }
-  
-  // Create a mapping of category names to default images
-  const categoryImages = {
-    electronics: "/assets/categories/electronics.png",
-    equipment: "/assets/categories/equipment.jpg",
-    furniture: "/assets/categories/furniture.png",
-    shoes: "/assets/categories/shoes.jpg",
-    vehicles: "/assets/categories/vehicles.jpg",
-    // Add more mappings as needed
-  };
 
   return (
-    <div className="bg-gray-100">
+    <div className="bg-white">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-        <h2 className="text-2xl font-bold text-gray-900">Shop by Categories</h2>
-        <div className="mt-6">
-          <Slider {...settings}>
-            {categories.map((category, index) => (
-              <div key={index} className="p-2">
-                <Link to={`/category/${category.toLowerCase()}`}>
-                  <div className="relative h-64 overflow-hidden rounded-lg group">
-                    <img
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      src={categoryImages[category.toLowerCase()] || "/images/categories/default.jpg"}
-                      alt={category}
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 transition-opacity duration-300"></div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Shop by Category</h2>
+        <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+          {categories.map((category) => (
+            <div key={category.category} className="group relative h-full">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden h-full flex flex-col">
+                <div className="p-4 flex-1">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {category.category}
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      ({category.count} items)
+                    </span>
                   </div>
-                  <h3 className="mt-2 text-center font-medium text-gray-900">
-                    {category}
-                  </h3>
-                </Link>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    {category.products.slice(0, 4).map((product, idx) => (
+                      <Link 
+                        key={product._id}
+                        to={`/product/${product._id}`}
+                        className={`relative aspect-square overflow-hidden rounded-lg bg-gray-200 ${
+                          idx >= category.products.length ? 'invisible' : ''
+                        }`}
+                      >
+                        <img
+                          src={product.thumbnail || product.images[0]}
+                          alt={product.title}
+                          className="h-full w-full object-cover object-center group-hover:opacity-75"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-1">
+                          <p className="text-xs truncate">{product.title}</p>
+                          <p className="text-xs font-medium">${product.price.current}</p>
+                        </div>
+                      </Link>
+                    ))}
+                    {/* Add placeholder items if less than 4 products */}
+                    {[...Array(Math.max(0, 4 - category.products.length))].map((_, idx) => (
+                      <div 
+                        key={`placeholder-${idx}`}
+                        className="aspect-square bg-gray-100 rounded-lg"
+                      />
+                    ))}
+                  </div>
+
+                  <Link
+                    to={`/search?q=${category.category}`}
+                    className="mt-auto inline-block w-full text-center py-2 px-4 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-100 transition-colors"
+                  >
+                    See all {category.count} items →
+                  </Link>
+                </div>
               </div>
-            ))}
-          </Slider>
+            </div>
+          ))}
         </div>
       </div>
     </div>

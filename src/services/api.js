@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const API_URL = 'http://localhost:5000';
-const API_URL = 'https://react-mern-back-end.onrender.com';
+const API_URL = 'http://localhost:5000';
+// const API_URL = 'https://react-mern-back-end.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -58,12 +58,24 @@ const user = {
 // Product endpoints
 const product = {
   /*----------------------------------------*/ 
-  searchProducts: (query) => api.get('/products/search', { params: query }),
+  searchProducts: (params) => {
+    // Clean up params to remove empty values
+    const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    console.log('API Search Params:', cleanParams); // Debug log
+    return api.get('/products/search', { params: cleanParams });
+  },
   /*featured*/ 
   getFeaturedProducts: () => api.get('/products/featured'),
   getFeaturedProduct: (id) => api.get(`/products/featured/${id}`),
   /*category*/ 
-  getProductsByCategory: (category) => api.get(`/products/category/${category}`),
+  getProductsByCategory: (category, params) => 
+    api.get(`/products/category/${category}`, { params }),
   getCategories: () => api.get('/products/categories'),
   getCategoryProduct: (id) => api.get(`/products/product/${id}`),
   /*featured*/ 
@@ -76,9 +88,26 @@ const product = {
   getNewProduct: (id) => api.get(`/products/new/${id}`),
   getNewProducts: () => api.get('/products/new'),
 
-  /*featured*/ 
-  sortProducts: (sortParams) => api.get('/products/sort', { params: sortParams }),
-  filterProductsByPriceRange: (minPrice, maxPrice) => api.get('/products/filter/price', { params: { minPrice, maxPrice } }),
+  sortProducts: (params) => api.get('/products/sort', { 
+    params: {
+      sortBy: params.sortBy,
+      category: params.category,
+      minPrice: params.minPrice,
+      maxPrice: params.maxPrice,
+      inStock: params.inStock
+    }
+  }),
+  filterProductsByPriceRange: (params) => {
+    const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    console.log('API Filter Params:', cleanParams); // Debug log
+    return api.get('/products/filter/price', { params: cleanParams });
+  },
   
   // Product Detail Routes
   getProductById: (id) => api.get(`/products/${id}`),

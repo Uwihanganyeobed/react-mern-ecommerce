@@ -7,23 +7,36 @@ const SearchContext = createContext();
 export const SearchProvider = ({ children }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    category: '',
-    minPrice: '',
-    maxPrice: '',
-    sort: ''
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0
   });
 
-  const searchProducts = useCallback(async (query) => {
+  const searchProducts = useCallback(async (params) => {
     try {
       setLoading(true);
-      const response = await productApi.searchProducts(query);
-      console.log('Search Results:', response.data);
+      // Convert params to match backend expectations
+      const searchParams = {
+        q: params.q || params.query,
+        category: params.category || '',
+        minPrice: params.minPrice || '',
+        maxPrice: params.maxPrice || '',
+        sortBy: params.sortBy || 'newest',
+        inStock: params.inStock || false,
+        onSale: params.onSale || false,
+        page: params.page || 1,
+        limit: params.limit || 10
+      };
+
+      const response = await productApi.searchProducts(searchParams);
+      console.log('Search API Response:', response); // Debug log
+
+      // Handle the response data structure
+      const products = response.data?.products || response.data || [];
+      setSearchResults(products);
       
-      // Check if the response has the expected structure
-      const results = response.data?.data || response.data || [];
-      setSearchResults(results);
-      return results;
+      return products;
     } catch (error) {
       console.error('Search Error:', error);
       toast.error('Error searching products');
@@ -34,49 +47,49 @@ export const SearchProvider = ({ children }) => {
     }
   }, []);
 
-  const filterProducts = useCallback(async (filterParams) => {
+  const filterProducts = useCallback(async (filters) => {
     try {
       setLoading(true);
-      let results;
-      
-      if (filterParams.minPrice || filterParams.maxPrice) {
-        results = await productApi.filterProductsByPriceRange(
-          filterParams.minPrice,
-          filterParams.maxPrice
-        );
-      }
-      
-      if (filterParams.sort) {
-        results = await productApi.sortProducts(filterParams.sort);
-      }
+      let response;
 
-      if (filterParams.category) {
-        results = await productApi.getProductsByCategory(filterParams.category);
-      }
+      // Combine search and filter parameters
+      const params = {
+        q: filters.query || '',
+        category: filters.category || '',
+        minPrice: filters.minPrice || '',
+        maxPrice: filters.maxPrice || '',
+        sortBy: filters.sortBy || 'newest',
+        inStock: filters.inStock || false,
+        onSale: filters.onSale || false,
+        brand: filters.brand || '',
+        page: filters.page || 1,
+        limit: filters.limit || 10
+      };
 
-      const finalResults = results?.data?.data || results?.data || [];
-      setSearchResults(finalResults);
-      setFilters(filterParams);
-      return finalResults;
+      response = await productApi.searchProducts(params);
+      console.log('Filter API Response:', response); // Debug log
+
+      const products = response.data?.products || response.data || [];
+      setSearchResults(products);
+      return products;
     } catch (error) {
       console.error('Filter Error:', error);
       toast.error('Error filtering products');
+      setSearchResults([]);
       return [];
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const value = {
-    searchResults,
-    loading,
-    filters,
-    searchProducts,
-    filterProducts
-  };
-
   return (
-    <SearchContext.Provider value={value}>
+    <SearchContext.Provider value={{
+      searchResults,
+      loading,
+      pagination,
+      searchProducts,
+      filterProducts
+    }}>
       {children}
     </SearchContext.Provider>
   );

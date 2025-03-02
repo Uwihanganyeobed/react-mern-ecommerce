@@ -226,7 +226,7 @@ const handleAddToCart = async () => {
             {/* Color Selection - Show only if colors are available */}
             {product.colors && product.colors.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-sm font-medium text-gray-900">Color</h3>
+                <h3 className="text-sm font-medium text-gray-900">Color or Variant</h3>
                 <RadioGroup value={selectedColor} onChange={setSelectedColor} className="mt-2 flex space-x-4">
                   {product.colors.map((color) => (
                     <RadioGroup.Option

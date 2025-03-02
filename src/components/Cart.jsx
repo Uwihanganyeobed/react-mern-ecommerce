@@ -54,7 +54,15 @@ export default function Cart() {
           <div className="overflow-x-auto mx-5">
             <ul className="divide-y divide-gray-200">
               {cartItems.length === 0 ? (
-                <li className="py-6 text-center text-gray-500">Your cart is empty.</li>
+                <>
+                  <li className="py-6 text-center text-gray-500">Your cart is empty.</li>
+                <Link
+                to="/"
+                className='m-6 flex items-center justify-center rounded-md bg-cyan-200 py-2'
+                >Try Shopping
+              </Link>
+                </>
+              
               ) : (
                 cartItems.map((item) => (
                   <li key={item._id} className="flex py-6">

@@ -107,11 +107,11 @@ export const ProductProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await productApi.getCategories();
-      console.log('Categories of products:', response.data);
-      setCategories(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
+      setCategories(response.data.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast.error('Failed to load categories');
+    } finally {
       setLoading(false);
     }
   }, []);

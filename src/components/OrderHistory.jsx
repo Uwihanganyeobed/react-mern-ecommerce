@@ -5,48 +5,26 @@ import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 
 const OrderHistory = () => {
-  const { orders, getMyOrders,cancelOrder } = useOrders();
+  const { orders, getMyOrders, cancelOrder } = useOrders();
   const navigate = useNavigate();
-  const [filter, setFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState('all');
 
   useEffect(() => {
     let mounted = true;
-
     const fetchOrders = async () => {
       try {
         setIsLoading(true);
         await getMyOrders();
       } catch (error) {
-        console.error('Error fetching orders:', error);
         toast.error('Failed to load orders');
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        if (mounted) setIsLoading(false);
       }
     };
-
     fetchOrders();
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
-
-  const handleCancelOrder = async (orderId) => {
-    try {
-      await cancelOrder(orderId);
-      toast.success('Order cancelled successfully');
-      await getMyOrders(); // Refresh orders
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to cancel order');
-    }
-  };
-
-  const handleViewDetails = (orderId) => {
-    navigate(`/order/${orderId}`);
-  };
 
   const getStatusColor = (status) => {
     const colors = {
@@ -59,10 +37,9 @@ const OrderHistory = () => {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true;
-    return order.status === filter;
-  });
+  const filteredOrders = orders.filter(order => 
+    activeFilter === 'all' ? true : order.status === activeFilter
+  );
 
   if (isLoading) {
     return (
@@ -73,136 +50,110 @@ const OrderHistory = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
+    <div className="bg-gray-50 min-h-screen py-4 sm:py-6 lg:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Order History</h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Check the status of recent orders, manage returns, and discover similar products.
-          </p>
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="mb-6 border-b border-gray-200">
-          <nav className="flex space-x-8" aria-label="Order filters">
-            {['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+        {/* Header - Larger on lg screens */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 lg:mb-8">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-0">Your Orders</h1>
+          
+          {/* Filter Links - Larger on lg screens */}
+          <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 text-sm lg:text-base">
+            {['all', 'pending', 'shipped', 'delivered', 'cancelled'].map((filter) => (
               <button
-                key={status}
-                onClick={() => setFilter(status)}
-                className={`
-                  pb-4 px-1 border-b-2 font-medium text-sm
-                  ${filter === status 
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
-                `}
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`${
+                  activeFilter === filter
+                    ? 'text-indigo-600 font-medium'
+                    : 'text-gray-500 hover:text-gray-700'
+                } transition-colors duration-200`}
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {filter.charAt(0).toUpperCase() + filter.slice(1)}
               </button>
             ))}
-          </nav>
+          </div>
         </div>
 
         {/* Orders List */}
-        <div className="space-y-6">
-          {filteredOrders.map((order) => (
-            <div key={order._id} className="bg-white shadow rounded-lg overflow-hidden">
-              {/* Order Header */}
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Order #{order.orderNumber}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Placed on {format(new Date(order.createdAt), 'MMM dd, yyyy')}
-                    </p>
-                  </div>
-                  <div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                      ${order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                        order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        'bg-blue-100 text-blue-800'}`}
-                    >
-                      {order.status.toUpperCase()}
+        {filteredOrders.length === 0 ? (
+          <div className="text-center py-8 sm:py-10 lg:py-12 bg-white rounded-lg shadow">
+            <h3 className="text-lg lg:text-xl font-medium text-gray-900">No orders found</h3>
+            <p className="mt-2 text-gray-500 lg:text-lg">Start shopping to create your first order</p>
+            <button
+              onClick={() => navigate('/')}
+              className="mt-4 lg:mt-6 px-4 py-2 lg:px-6 lg:py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 lg:text-lg"
+            >
+              Browse Products
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4 lg:space-y-6">
+            {filteredOrders.map((order) => (
+              <div
+                key={order._id}
+                className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {/* Order Header */}
+                <div className="p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b">
+                  <div className="flex flex-col">
+                    <span className="text-sm lg:text-base text-gray-500">Order #{order.orderNumber}</span>
+                    <span className="text-sm lg:text-base text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
                     </span>
                   </div>
+                  <div className="mt-2 sm:mt-0 flex items-center gap-2 lg:gap-4">
+                    <span className={`px-2 py-1 lg:px-3 lg:py-1.5 rounded-full text-xs lg:text-sm ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
+                    <span className="font-medium lg:text-lg">${order.total}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Order Items */}
-              <div className="divide-y divide-gray-200">
-                {order.items.map((item) => (
-                  <div key={item._id} className="flex items-center gap-4 p-4">
-                    <div className="w-20 h-20 flex-shrink-0">
-                      <img
-                        src={item.productDetails?.thumbnail || item.product?.thumbnail || '/placeholder.jpg'}
-                        alt={item.productDetails?.title || item.product?.title}
-                        className="w-full h-full object-cover rounded-lg"
-                        onError={(e) => {
-                          e.target.src = '/placeholder.jpg';
-                          e.target.onerror = null;
-                        }}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-lg font-medium text-gray-900 truncate">
-                        {item.productDetails?.title || item.product?.title}
-                      </h4>
-                      <div className="mt-1 flex items-center gap-4">
-                        <span className="text-sm text-gray-500">Qty: {item.quantity}</span>
-                        <span className="text-sm font-medium text-gray-900">${item.price}</span>
+                {/* Order Items Preview */}
+                <div className="p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-wrap gap-4 lg:gap-6">
+                    {order.items.slice(0, 2).map((item) => (
+                      <div key={item._id} className="flex items-center gap-3 lg:gap-4">
+                        <img
+                          src={item.productDetails?.thumbnail || '/placeholder.jpg'}
+                          alt={item.productDetails?.title}
+                          className="w-16 h-16 lg:w-20 lg:h-20 object-cover rounded"
+                        />
+                        <div>
+                          <p className="text-sm lg:text-base font-medium truncate max-w-[200px] lg:max-w-[300px]">
+                            {item.productDetails?.title}
+                          </p>
+                          <p className="text-sm lg:text-base text-gray-500">Qty: {item.quantity}</p>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Order Footer */}
-              <div className="p-6 bg-gray-50 border-t border-gray-200">
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-4">
-                    {order.status === 'pending' && (
-                      <button
-                        onClick={() => handleCancelOrder(order._id)}
-                        className="text-sm font-medium text-red-600 hover:text-red-500"
-                      >
-                        Cancel Order
-                      </button>
+                    ))}
+                    {order.items.length > 2 && (
+                      <p className="text-sm lg:text-base text-gray-500 self-center">
+                        +{order.items.length - 2} more items
+                      </p>
                     )}
-                    <button
-                      onClick={() => handleViewDetails(order._id)}
-                      className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Total Amount</p>
-                    <p className="text-lg font-medium text-gray-900">${order.total}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Empty State */}
-        {filteredOrders.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {filter === 'all' 
-                ? "You haven't placed any orders yet."
-                : `No ${filter} orders found.`}
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => navigate('/')}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Start Shopping
-              </button>
-            </div>
+                {/* Order Actions */}
+                <div className="px-4 sm:px-6 lg:px-8 py-3 lg:py-4 bg-gray-50 flex justify-end gap-4 lg:gap-6">
+                  <button
+                    onClick={() => navigate(`/order/${order._id}`)}
+                    className="text-sm lg:text-base text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+                  >
+                    View Details
+                  </button>
+                  {order.status === 'pending' && (
+                    <button
+                      onClick={() => cancelOrder(order._id)}
+                      className="text-sm lg:text-base text-red-600 hover:text-red-800 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
