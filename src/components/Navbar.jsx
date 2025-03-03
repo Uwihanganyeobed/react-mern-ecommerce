@@ -6,7 +6,6 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
   UserCircleIcon,
-  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
@@ -28,14 +27,6 @@ export default function Navbar() {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const searchRef = useRef(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showSearchFilters, setShowSearchFilters] = useState(false);
-  const [searchFilters, setSearchFilters] = useState({
-    category: '',
-    minPrice: '',
-    maxPrice: '',
-    sortBy: 'newest'
-  });
   const { categories } = useProducts();
   
   const { searchProducts } = useSearch();
@@ -149,22 +140,7 @@ export default function Navbar() {
             {/* Search Form */}
             <div className="relative flex-1 max-w-3xl mx-auto" ref={searchRef}>
               <form onSubmit={handleSearch} className="flex">
-                {/* Category Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="h-full rounded-l-lg border-r border-gray-300 bg-gray-50 px-4 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-600"
-                  >
-                    <option value="">All</option>
-                    {categories.map(cat => (
-                      <option key={cat._id} value={cat._id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
+               
                 {/* Search Input */}
                 <div className="relative flex-1">
                   <input
@@ -345,19 +321,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center w-1/2 lg:w-2/5 xl:w-1/3">
             <div className="relative w-full" ref={searchRef}>
               <form onSubmit={handleSearch} className="flex w-full">
-                {/* Category Dropdown */}
-                <div className="relative">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="h-full rounded-l-lg border-r border-gray-300 bg-gray-50 px-4 text-gray-500 focus:outline-none"
-                  >
-                    <option value="">All</option>
-                    {categories.map(cat => (
-                      <option key={cat._id} value={cat._id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
+             
 
                 {/* Search Input */}
                 <div className="relative flex-1">

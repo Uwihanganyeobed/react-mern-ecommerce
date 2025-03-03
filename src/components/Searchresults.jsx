@@ -8,7 +8,6 @@ import "react-loading-skeleton/dist/skeleton.css"; // Skeleton styles
 
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { searchProducts, filterProducts, searchResults, loading } = useSearch();
   const { categories } = useProducts();
   const [currentPage, setCurrentPage] = useState(1);
@@ -145,16 +144,7 @@ export default function SearchResults() {
       {showFilters && (
         <div className="mb-6 p-4 bg-white rounded-lg shadow">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <select
-              value={filters.category}
-              onChange={(e) => handleFilterChange("category", e.target.value)}
-              className="rounded-md border-gray-300 py-2"
-            >
-              <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
-              ))}
-            </select>
+            
 
             <input
               type="number"
