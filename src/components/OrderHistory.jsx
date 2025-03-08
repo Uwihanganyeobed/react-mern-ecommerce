@@ -41,6 +41,20 @@ const OrderHistory = () => {
     activeFilter === 'all' ? true : order.status === activeFilter
   );
 
+  const handleCancelOrder = async (orderId) => {
+    try {
+      setIsLoading(true);
+      await cancelOrder(orderId);
+      toast.success('Order cancelled successfully');
+      // Refresh orders list
+      await getMyOrders();
+    } catch (error) {
+      toast.error(error.message || 'Failed to cancel order');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -52,110 +66,108 @@ const OrderHistory = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-4 sm:py-6 lg:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header - Larger on lg screens */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 lg:mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-0">Your Orders</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 sm:mb-0">
+            Your Orders
+          </h1>
           
-          {/* Filter Links - Larger on lg screens */}
-          <div className="flex flex-wrap gap-3 sm:gap-4 lg:gap-6 text-sm lg:text-base">
-            {['all', 'pending', 'shipped', 'delivered', 'cancelled'].map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`${
-                  activeFilter === filter
-                    ? 'text-indigo-600 font-medium'
-                    : 'text-gray-500 hover:text-gray-700'
-                } transition-colors duration-200`}
-              >
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </button>
-            ))}
+          {/* Filter Links - Scrollable on small screens */}
+          <div className="w-full sm:w-auto overflow-x-auto">
+            <div className="flex gap-2 sm:gap-4 min-w-max pb-2 sm:pb-0">
+              {['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`
+                    px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors
+                    ${activeFilter === filter
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Orders List */}
-        {filteredOrders.length === 0 ? (
-          <div className="text-center py-8 sm:py-10 lg:py-12 bg-white rounded-lg shadow">
-            <h3 className="text-lg lg:text-xl font-medium text-gray-900">No orders found</h3>
-            <p className="mt-2 text-gray-500 lg:text-lg">Start shopping to create your first order</p>
-            <button
-              onClick={() => navigate('/')}
-              className="mt-4 lg:mt-6 px-4 py-2 lg:px-6 lg:py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 lg:text-lg"
-            >
-              Browse Products
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4 lg:space-y-6">
-            {filteredOrders.map((order) => (
+        <div className="space-y-4">
+          {filteredOrders.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-6 text-center">
+              <p className="text-gray-500">No orders found</p>
+            </div>
+          ) : (
+            filteredOrders.map((order) => (
               <div
                 key={order._id}
-                className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-white rounded-lg shadow overflow-hidden"
               >
                 {/* Order Header */}
-                <div className="p-4 sm:p-6 lg:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b">
-                  <div className="flex flex-col">
+                <div className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b">
+                  <div className="flex flex-col mb-2 sm:mb-0">
                     <span className="text-sm lg:text-base text-gray-500">Order #{order.orderNumber}</span>
                     <span className="text-sm lg:text-base text-gray-500">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="mt-2 sm:mt-0 flex items-center gap-2 lg:gap-4">
-                    <span className={`px-2 py-1 lg:px-3 lg:py-1.5 rounded-full text-xs lg:text-sm ${getStatusColor(order.status)}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-xs lg:text-sm ${getStatusColor(order.status)}`}>
                       {order.status}
                     </span>
-                    <span className="font-medium lg:text-lg">${order.total}</span>
+                    <span className="font-medium lg:text-lg">${order.total.toFixed(2)}</span>
                   </div>
                 </div>
 
-                {/* Order Items Preview */}
-                <div className="p-4 sm:p-6 lg:p-8">
-                  <div className="flex flex-wrap gap-4 lg:gap-6">
-                    {order.items.slice(0, 2).map((item) => (
-                      <div key={item._id} className="flex items-center gap-3 lg:gap-4">
+                {/* Order Items */}
+                <div className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {order.items.map((item) => (
+                      <div key={item._id} className="flex items-center gap-3">
                         <img
                           src={item.productDetails?.thumbnail || '/placeholder.jpg'}
                           alt={item.productDetails?.title}
-                          className="w-16 h-16 lg:w-20 lg:h-20 object-cover rounded"
+                          className="w-16 h-16 object-cover rounded"
                         />
                         <div>
-                          <p className="text-sm lg:text-base font-medium truncate max-w-[200px] lg:max-w-[300px]">
+                          <p className="text-sm font-medium truncate max-w-[200px]">
                             {item.productDetails?.title}
                           </p>
-                          <p className="text-sm lg:text-base text-gray-500">Qty: {item.quantity}</p>
+                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                          <p className="text-sm text-gray-500">${item.price}</p>
                         </div>
                       </div>
                     ))}
-                    {order.items.length > 2 && (
-                      <p className="text-sm lg:text-base text-gray-500 self-center">
-                        +{order.items.length - 2} more items
-                      </p>
-                    )}
                   </div>
                 </div>
 
                 {/* Order Actions */}
-                <div className="px-4 sm:px-6 lg:px-8 py-3 lg:py-4 bg-gray-50 flex justify-end gap-4 lg:gap-6">
+                <div className="px-4 sm:px-6 py-3 bg-gray-50 flex justify-end gap-3">
                   <button
                     onClick={() => navigate(`/order/${order._id}`)}
-                    className="text-sm lg:text-base text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+                    className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors"
                   >
                     View Details
                   </button>
-                  {order.status === 'pending' && (
+                  {(order.status === 'pending' || order.status === 'processing') && (
                     <button
-                      onClick={() => cancelOrder(order._id)}
-                      className="text-sm lg:text-base text-red-600 hover:text-red-800 transition-colors duration-200"
+                      onClick={() => handleCancelOrder(order._id)}
+                      disabled={isLoading}
+                      className={`text-sm text-red-600 hover:text-red-800 transition-colors ${
+                        isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
-                      Cancel
+                      {isLoading ? 'Cancelling...' : 'Cancel Order'}
                     </button>
                   )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

@@ -130,7 +130,17 @@ const order = {
   getMyOrders: () => api.get('/orders/my-orders'),
   getOrderById: (orderId) => api.get(`/orders/${orderId}`),
   cancelOrder: (orderId) => api.put(`/orders/${orderId}/cancel`),
-  updateOrderStatus: (orderId, status) => api.patch(`/orders/${orderId}/status`, { status })
+  getOrderStatusUpdates: (orderId) => api.get(`/orders/${orderId}/status-updates`),
+  getOrderTracking: (orderId) => api.get(`/orders/${orderId}/tracking`),
+  processPayment: (orderId) => api.post(`/orders/${orderId}/payment`),
+  getOrderPaymentStatus: (orderId) => api.get(`/orders/${orderId}/payment-status`)
+};
+
+// Payment endpoints
+const payment = {
+  createPaymentIntent: () => api.post('/payments/create-intent'),
+  verifyPayment: () => api.post('/payments/verify'),
+  getPaymentStatus: () => api.get('/payments/status/:paymentId')
 };
 
 // Coupon endpoints
@@ -144,31 +154,14 @@ const contact = {
   getMyContacts: () => api.get('/contacts/my-contacts')
 };
 
-// Feedback endpoints
-const feedback = {
-  getPublicFeedback: () => api.get('/feedback/public'),
-  submitFeedback: (feedbackData) => api.post('/feedback', feedbackData),
-  getMyFeedback: () => api.get('/feedback/my-feedback'),
-  updateFeedback: (id, feedbackData) => api.put(`/feedback/${id}`, feedbackData),
-  deleteFeedback: (id) => api.delete(`/feedback/${id}`)
-};
-
-// Notification endpoints
-const notification = {
-  getMyNotifications: () => api.get('/notifications'),
-  markAsRead: (id) => api.put(`/notifications/${id}/read`),
-  markAllAsRead: () => api.put('/notifications/read-all'),
-  deleteNotification: (id) => api.delete(`/notifications/${id}`),
-  updatePreferences: (preferences) => api.put('/notifications/preferences', preferences),
-  createTestNotifications: () => api.post('/notifications/create')
-};
-
 // Subscription endpoints
 const subscription = {
   subscribe: () => api.post('/subscribers/subscribe'),
   unsubscribe: (token) => api.post(`/subscribers/unsubscribe/${token}`),
   verifySubscription: (token) => api.get(`/subscribers/verify/${token}`)
 };
+
+
 
 export { 
   api, 
@@ -181,8 +174,6 @@ export {
   order, 
   coupon, 
   contact, 
-  feedback, 
-  notification, 
   subscription 
 };
 

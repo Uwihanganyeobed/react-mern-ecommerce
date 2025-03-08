@@ -13,8 +13,6 @@ import { CartProvider } from './context/cartContext';
 import { OrderProvider } from './context/orderContext';
 import { PaymentProvider } from './context/paymentContext';
 import { CouponProvider } from './context/couponContext';
-import { FeedbackProvider } from './context/feedbackContext';
-import { NotificationProvider } from './context/notificationContext';
 import { SubscriberProvider } from './context/subscriberContext';
 
 export default function App() {
@@ -27,8 +25,6 @@ export default function App() {
             <OrderProvider>
               <PaymentProvider>
                 <CouponProvider>
-                  <NotificationProvider>
-                    <FeedbackProvider>
                       <SubscriberProvider>
                           <SearchProvider>
                             <div className="flex flex-col min-h-screen">
@@ -41,8 +37,6 @@ export default function App() {
                             </div>
                           </SearchProvider>
                       </SubscriberProvider>
-                    </FeedbackProvider>
-                  </NotificationProvider>
                 </CouponProvider>
               </PaymentProvider>
             </OrderProvider>

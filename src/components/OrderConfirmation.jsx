@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useOrders } from '../context/orderContext';
-import { useAuth } from '../context/authContext';
-import { useNotifications } from '../context/notificationContext';
 
 const OrderConfirmation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentOrder, getOrderById } = useOrders();
-  const { user } = useAuth();
-  const { notifications } = useNotifications();
   const [isAnimating, setIsAnimating] = useState(true);
   const [orderDetails, setOrderDetails] = useState(null);
 
