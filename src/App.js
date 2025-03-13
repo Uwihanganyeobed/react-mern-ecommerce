@@ -14,6 +14,9 @@ import { OrderProvider } from './context/orderContext';
 import { PaymentProvider } from './context/paymentContext';
 import { CouponProvider } from './context/couponContext';
 import { SubscriberProvider } from './context/subscriberContext';
+// import PaymentPage from './components/PaymentPage';
+// import PaymentSuccess from './components/PaymentSuccess';
+// import PaymentCancel from './components/PaymentCancel';
 
 export default function App() {
   return (

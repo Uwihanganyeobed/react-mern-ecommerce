@@ -35,6 +35,11 @@ export const SearchProvider = ({ children }) => {
       // Handle the response data structure
       const products = response.data?.products || response.data || [];
       setSearchResults(products);
+      setPagination({
+        currentPage: response.data.currentPage,
+        totalPages: response.data.totalPages,
+        totalItems: response.data.totalItems
+      });
       
       return products;
     } catch (error) {

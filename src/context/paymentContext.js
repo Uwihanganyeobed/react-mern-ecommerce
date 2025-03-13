@@ -1,106 +1,75 @@
 import React, { createContext, useContext, useState } from 'react';
-// import { loadStripe } from '@stripe/stripe-js';
-import { toast } from 'react-toastify';
+import { loadStripe } from '@stripe/stripe-js';
+import { order as orderApi } from '../services/api';
+import { useOrders } from './orderContext';
+import { toast } from 'react-hot-toast';
 
-// const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const PaymentContext = createContext(null);
 
 export const PaymentProvider = ({ children }) => {
-  // const { createOrder } = useOrders();
-  const [processing, setProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState(null);
+  const { getOrderById } = useOrders();
+  const [loading, setLoading] = useState(false);
 
-  const initializePayment = async (amount, currency = 'usd') => {
+  const processPayment = async (orderId) => {
     try {
-      setProcessing(true);
-      // const stripe = await stripePromise;
+      setLoading(true);
       
-      // Create payment intent on your backend
-      const response = await fetch('/api/create-payment-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount, currency }),
+      // Get the stripe instance
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error('Failed to load Stripe');
+
+      // Create payment session
+      const response = await orderApi.createPaymentSession(orderId);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to create payment session');
+      }
+
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: response.data.sessionId
       });
-      
-      const { clientSecret } = await response.json();
-      // return { stripe, clientSecret };
-    } catch (error) {
-      toast.error('Error initializing payment');
-      throw error;
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const processPayment = async (paymentData, orderData) => {
-    try {
-      setProcessing(true);
-      
-      // Create order first
-      // const order = await createOrder(orderData);
-      
-      // Process payment
-      const { stripe, clientSecret } = await initializePayment(
-        orderData.totalAmount * 100 // Stripe expects amount in cents
-      );
-
-      const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        {
-          payment_method: paymentData.paymentMethodId,
-        }
-      );
 
       if (error) {
-        toast.error(error.message);
-        throw error;
+        throw new Error(error.message);
       }
 
-      if (paymentIntent.status === 'succeeded') {
-        setPaymentMethod(paymentIntent.payment_method);
-        toast.success('Payment processed successfully!');
-        // return { order, paymentIntent };
-      }
     } catch (error) {
-      toast.error('Payment failed. Please try again.');
+      console.error('Payment error:', error);
+      toast.error(error.message || 'Payment processing failed');
       throw error;
     } finally {
-      setProcessing(false);
+      setLoading(false);
     }
   };
 
-  const savePaymentMethod = async (paymentMethodId) => {
+  const verifyPayment = async (orderId, sessionId) => {
     try {
-      setProcessing(true);
-      // Save payment method to your backend
-      const response = await fetch('/api/save-payment-method', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ paymentMethodId }),
-      });
+      setLoading(true);
+      const response = await orderApi.verifyPayment(orderId, sessionId);
       
-      const savedMethod = await response.json();
-      setPaymentMethod(savedMethod);
-      toast.success('Payment method saved successfully');
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Payment verification failed');
+      }
+
+      const order = await getOrderById(orderId);
+      toast.success('Payment successful');
+      return order;
     } catch (error) {
-      toast.error('Error saving payment method');
+      console.error('Verification error:', error);
+      toast.error('Payment verification failed');
       throw error;
     } finally {
-      setProcessing(false);
+      setLoading(false);
     }
   };
 
   return (
     <PaymentContext.Provider value={{
-      processing,
-      paymentMethod,
-      initializePayment,
+      loading,
       processPayment,
-      savePaymentMethod
+      verifyPayment
     }}>
       {children}
     </PaymentContext.Provider>

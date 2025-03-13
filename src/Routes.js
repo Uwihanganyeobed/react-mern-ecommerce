@@ -22,6 +22,11 @@ import ResetPassword from "./components/auth/ResetPassword";
 import Categories from "./components/Categories";
 import OrderDetails from "./components/OrderDetails";
 import OrderHistory from "./components/OrderHistory";
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import PaymentForm from './components/PaymentForm';
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 // Main component definition
 const MainPage = () => {
@@ -110,6 +115,18 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <OrderDetails />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Payment Route */}
+      <Route
+        path="/order/:id/payment"
+        element={
+          <ProtectedRoute>
+            <Elements stripe={stripePromise}>
+              <PaymentForm />
+            </Elements>
           </ProtectedRoute>
         }
       />

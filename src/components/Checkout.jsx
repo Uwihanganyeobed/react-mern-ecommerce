@@ -22,19 +22,16 @@ export default function Checkout() {
     email: "",
     firstName: "",
     lastName: "",
-    company: "",
     address: "",
     city: "",
     country: "",
     state: "",
     postalCode: "",
     phone: "",
-    deliveryMethod: "standard",
-    paymentMethod: "credit_card",
+    paymentMethod: "card",
     cardNumber: "",
-    cardName: "",
-    expirationDate: "",
-    cvc: ""
+    cardExpiry: "",
+    cardCvc: ""
   };
 
   const {
@@ -58,50 +55,43 @@ export default function Checkout() {
   // The selected payment method
   const paymentMethod = watch("paymentMethod");
 
-  const onSubmit = async (formData) => {
+  const onSubmit = async (data) => {
     try {
       setLoading(true);
-
-      // Format order data to match schema
+      
       const orderData = {
         shippingAddress: {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          country: formData.country,
-          postalCode: formData.postalCode,
-          company: formData.company || ''
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          postalCode: data.postalCode,
+          country: data.country
         },
-        paymentMethod: formData.paymentMethod,
-        items: cartItems.map(item => ({
-          product: {
-            _id: item.product._id,
-            title: item.product.title,
-            price: {
-              current: item.product.price.current
-            },
-            stock: item.product.stock
-          },
-          quantity: item.quantity,
-          variant: item.variant
-        })),
-        total: cartTotal
+        paymentMethod: data.paymentMethod,
+        cardDetails: data.paymentMethod === 'card' ? {
+          number: data.cardNumber,
+          exp_month: parseInt(data.cardExpiry?.split('/')[0]),
+          exp_year: parseInt('20' + data.cardExpiry?.split('/')[1])
+        } : null
       };
 
       const order = await createOrder(orderData);
       
-      // Navigate to order confirmation
-      navigate('/order-confirmation', { 
-        state: { orderId: order._id }
-      });
-
+      if (order) {
+        if (order.paymentMethod === 'card') {
+          navigate(`/order/${order._id}/payment`);
+        } else {
+          navigate(`/order/${order._id}`, { 
+            state: { isNewOrder: true }
+          });
+        }
+      }
     } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error(error.message || 'Error processing checkout');
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -203,18 +193,6 @@ export default function Checkout() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">
-                    Company
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="example: Company Name (optional)"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    {...register("company")}
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700">
                     Address
                   </label>
                   <input
@@ -279,7 +257,6 @@ export default function Checkout() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      State / Province
                     </label>
                     <input
                       type="text"
@@ -373,107 +350,72 @@ export default function Checkout() {
               {/* Payment Method */}
               <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
               <div className="bg-white p-6 rounded-lg shadow mb-5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Credit Card Option */}
-                  <label className="relative cursor-pointer">
+                <div className="space-y-4">
+                  <div className="flex items-center">
                     <input
+                      id="card"
+                      name="paymentMethod"
                       type="radio"
-                      value="credit_card"
+                      value="card"
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                       {...register("paymentMethod")}
-                      className="peer sr-only"
                       defaultChecked
                     />
-                    <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
-                      <div className="flex flex-col items-center">
-                        <img src="/assets/icons/credit-card.svg" alt="Credit Card" className="h-12 mb-2" />
-                        <h3 className="font-semibold">Credit Card</h3>
-                        <div className="flex gap-2 mt-2">
-                          <img src="/assets/icons/visa.svg" alt="Visa" className="h-6" />
-                          <img src="/assets/icons/mastercard.svg" alt="Mastercard" className="h-6" />
-                          <img src="/assets/icons/amex.svg" alt="Amex" className="h-6" />
-                        </div>
-                      </div>
-                    </div>
-                  </label>
+                    <label htmlFor="card" className="ml-3">
+                      <span className="block text-sm font-medium text-gray-700">Credit Card</span>
+                    </label>
+                  </div>
 
-                  {/* PayPal Option */}
-                  <label className="relative cursor-pointer">
+                  <div className="flex items-center">
                     <input
+                      id="cash"
+                      name="paymentMethod"
                       type="radio"
-                      value="paypal"
+                      value="cash"
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                       {...register("paymentMethod")}
-                      className="peer sr-only"
                     />
-                    <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
-                      <div className="flex flex-col items-center">
-                        <img src="/assets/icons/paypal.svg" alt="PayPal" className="h-12 mb-2" />
-                        <h3 className="font-semibold">PayPal</h3>
-                        <p className="text-sm text-gray-500 text-center mt-2">
-                          Pay with your PayPal account
-                        </p>
-                      </div>
-                    </div>
-                  </label>
+                    <label htmlFor="cash" className="ml-3">
+                      <span className="block text-sm font-medium text-gray-700">Cash on Delivery</span>
+                    </label>
+                  </div>
 
-                  {/* Apple/Google Pay Option */}
-                  <label className="relative cursor-pointer">
+                  <div className="flex items-center">
                     <input
+                      id="bank_transfer"
+                      name="paymentMethod"
                       type="radio"
-                      value="digital_wallet"
+                      value="bank_transfer"
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                       {...register("paymentMethod")}
-                      className="peer sr-only"
                     />
-                    <div className="p-4 border-2 rounded-lg hover:border-indigo-600 peer-checked:border-indigo-600 peer-checked:bg-indigo-50">
-                      <div className="flex flex-col items-center">
-                        <img src="/assets/icons/wallet.svg" alt="Digital Wallet" className="h-12 mb-2" />
-                        <h3 className="font-semibold">Digital Wallet</h3>
-                        <div className="flex gap-2 mt-2">
-                          <img src="/assets/icons/apple-pay.svg" alt="Apple Pay" className="h-10" />
-                          <img src="/assets/icons/google-pay.svg" alt="Google Pay" className="h-10" />
-                        </div>
-                      </div>
-                    </div>
-                  </label>
+                    <label htmlFor="bank_transfer" className="ml-3">
+                      <span className="block text-sm font-medium text-gray-700">Bank Transfer</span>
+                    </label>
+                  </div>
                 </div>
 
                 {/* Conditional rendering based on selected payment method */}
-                {paymentMethod === "credit_card" && (
+                {paymentMethod === "card" && (
                   <div className="mt-6 space-y-4 border-t pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Card Number
-                        </label>
-                        <input
-                          type="text"
-                          maxLength="16"
-                          {...register("cardNumber")}
-                          placeholder="1234567890123456"
-                          className={`mt-1 block w-full px-3 py-2 border ${
-                            errors.cardNumber ? "border-red-500" : "border-gray-300"
-                          } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
-                        />
-                        {errors.cardNumber && (
-                          <p className="text-red-500 text-sm">{errors.cardNumber.message}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Name on Card
-                        </label>
-                        <input
-                          type="text"
-                          {...register("cardName")}
-                          placeholder="John Doe"
-                          className={`mt-1 block w-full px-3 py-2 border ${
-                            errors.cardName ? "border-red-500" : "border-gray-300"
-                          } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
-                        />
-                        {errors.cardName && (
-                          <p className="text-red-500 text-sm">{errors.cardName.message}</p>
-                        )}
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        maxLength="16"
+                        placeholder="4242424242424242"
+                        className={`mt-1 block w-full px-3 py-2 border ${
+                          errors.cardNumber ? "border-red-500" : "border-gray-300"
+                        } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
+                        {...register("cardNumber")}
+                      />
+                      {errors.cardNumber && (
+                        <p className="text-red-500 text-sm">{errors.cardNumber.message}</p>
+                      )}
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
@@ -481,50 +423,51 @@ export default function Checkout() {
                         </label>
                         <input
                           type="text"
-                          maxLength="5"
-                          {...register("expirationDate")}
                           placeholder="MM/YY"
+                          maxLength="5"
                           className={`mt-1 block w-full px-3 py-2 border ${
-                            errors.expirationDate ? "border-red-500" : "border-gray-300"
+                            errors.cardExpiry ? "border-red-500" : "border-gray-300"
                           } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
+                          {...register("cardExpiry")}
                         />
-                        {errors.expirationDate && (
-                          <p className="text-red-500 text-sm">{errors.expirationDate.message}</p>
+                        {errors.cardExpiry && (
+                          <p className="text-red-500 text-sm">{errors.cardExpiry.message}</p>
                         )}
                       </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700">
                           CVC
                         </label>
                         <input
                           type="text"
-                          maxLength="4"
-                          {...register("cvc")}
                           placeholder="123"
+                          maxLength="3"
                           className={`mt-1 block w-full px-3 py-2 border ${
-                            errors.cvc ? "border-red-500" : "border-gray-300"
+                            errors.cardCvc ? "border-red-500" : "border-gray-300"
                           } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
+                          {...register("cardCvc")}
                         />
-                        {errors.cvc && (
-                          <p className="text-red-500 text-sm">{errors.cvc.message}</p>
+                        {errors.cardCvc && (
+                          <p className="text-red-500 text-sm">{errors.cardCvc.message}</p>
                         )}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {paymentMethod === "paypal" && (
+                {paymentMethod === "cash" && (
                   <div className="mt-6 border-t p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
                     <p className="text-center text-gray-700">
-                      You will be redirected to PayPal to complete payment after placing order
+                      Cash on Delivery payment will be processed after placing order
                     </p>
                   </div>
                 )}
 
-                {paymentMethod === "digital_wallet" && (
+                {paymentMethod === "bank_transfer" && (
                   <div className="mt-6 border-t p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
                     <p className="text-center text-gray-700">
-                      Digital wallet payment will be processed after placing order
+                      Bank Transfer payment will be processed after placing order
                     </p>
                   </div>
                 )}

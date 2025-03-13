@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useOrders } from '../context/orderContext';
+import { usePayment } from '../context/paymentContext';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 
@@ -8,11 +9,13 @@ const OrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { getOrderById, cancelOrder } = useOrders();
+  const { getOrderById, cancelOrder, getOrderTracking } = useOrders();
+  const { checkPaymentStatus } = usePayment();
   const [order, setOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isNewOrder] = useState(location.state?.isNewOrder || false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
   
   useEffect(() => {
     let isMounted = true;
@@ -44,6 +47,26 @@ const OrderDetails = () => {
       isMounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    const fetchTrackingInfo = async () => {
+      if (order?._id) {
+        try {
+          const tracking = await getOrderTracking(order._id);
+          setTrackingInfo(tracking.data);
+          
+          // Check payment status if order is pending
+          if (order.status === 'pending') {
+            await checkPaymentStatus(order._id);
+          }
+        } catch (error) {
+          console.error('Error fetching tracking info:', error);
+        }
+      }
+    };
+
+    fetchTrackingInfo();
+  }, [order]);
 
   const handleCancelOrder = async () => {
     try {
@@ -91,6 +114,31 @@ const OrderDetails = () => {
         )}
       </button>
     );
+  };
+
+  const renderPaymentButton = () => {
+    if (order.status === 'pending') {
+      return (
+        <button
+          onClick={() => navigate(`/order/${order._id}/payment`)}
+          className="ml-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+        >
+          Proceed to Payment
+        </button>
+      );
+    }
+    return null;
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      processing: 'bg-blue-100 text-blue-800',
+      shipped: 'bg-purple-100 text-purple-800',
+      delivered: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
   if (isLoading || !order) {
@@ -212,6 +260,43 @@ const OrderDetails = () => {
             </address>
           </div>
 
+          {/* Order Tracking */}
+          {trackingInfo && (
+            <div className="px-6 py-4 border-t border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">Order Tracking</h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Status</span>
+                  <span className={`px-2 py-1 text-sm rounded-full ${
+                    getStatusColor(trackingInfo.status)
+                  }`}>
+                    {trackingInfo.status}
+                  </span>
+                </div>
+                {trackingInfo.tracking && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Tracking Number</span>
+                      <span className="text-sm font-medium">{trackingInfo.tracking.number}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Carrier</span>
+                      <span className="text-sm font-medium">{trackingInfo.tracking.carrier}</span>
+                    </div>
+                    {trackingInfo.tracking.estimatedDelivery && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Estimated Delivery</span>
+                        <span className="text-sm font-medium">
+                          {new Date(trackingInfo.tracking.estimatedDelivery).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="px-6 py-4 border-t border-gray-200">
             <div className="flex justify-between items-center">
@@ -221,7 +306,10 @@ const OrderDetails = () => {
               >
                 ← Back to Orders
               </button>
-              {renderCancelButton()}
+              <div className="flex items-center">
+                {renderCancelButton()}
+                {renderPaymentButton()}
+              </div>
             </div>
           </div>
         </div>

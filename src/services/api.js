@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const API_URL = 'http://localhost:5000';
-const API_URL = 'https://react-mern-back-end.onrender.com';
+const API_URL = 'http://localhost:5000';
+// const API_URL = 'https://react-mern-back-end.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -128,11 +128,11 @@ const cart = {
 const order = {
   createOrder: (orderData) => api.post('/orders', orderData),
   getMyOrders: () => api.get('/orders/my-orders'),
-  getOrderById: (orderId) => api.get(`/orders/${orderId}`),
-  cancelOrder: (orderId) => api.put(`/orders/${orderId}/cancel`),
-  getOrderStatusUpdates: (orderId) => api.get(`/orders/${orderId}/status-updates`),
-  getOrderTracking: (orderId) => api.get(`/orders/${orderId}/tracking`),
+  getOrderById: (id) => api.get(`/orders/${id}`),
+  cancelOrder: (id) => api.put(`/orders/${id}/cancel`),
+  getOrderTracking: (id) => api.get(`/orders/${id}/tracking`),
   processPayment: (orderId) => api.post(`/orders/${orderId}/payment`),
+  verifyOrderPayment: (orderId) => api.post(`/orders/${orderId}/verify-payment`),
   getOrderPaymentStatus: (orderId) => api.get(`/orders/${orderId}/payment-status`)
 };
 
@@ -172,6 +172,7 @@ export {
   product, 
   cart, 
   order, 
+  payment,
   coupon, 
   contact, 
   subscription 

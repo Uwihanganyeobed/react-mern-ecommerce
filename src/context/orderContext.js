@@ -2,132 +2,150 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { order as orderApi } from '../services/api';
 import { useCart } from './cartContext';
 import { useAuth } from './authContext';
-import { toast } from 'react-toastify';
-import { orderSchema } from '../utils/validations';
+import { toast } from 'react-hot-toast';
 
 const OrderContext = createContext(null);
 
 export const OrderProvider = ({ children }) => {
   const { clearCart } = useCart();
-  const { isLoggedIn } = useAuth();
   const [orders, setOrders] = useState([]);
   const [currentOrder, setCurrentOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const resetError = () => setError(null);
-
-  // Use useCallback for functions that are used in useEffect dependencies
+  // Get all orders for the current user
   const getMyOrders = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await orderApi.getMyOrders();
-      setOrders(response.data.orders || []);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch orders');
+      }
+      
+      setOrders(response.data.orders);
       return response.data.orders;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error fetching orders';
-      setError(errorMessage);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []); // Empty dependency array since it doesn't depend on any props or state
-
-  const getOrderById = useCallback(async (orderId) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await orderApi.getOrderById(orderId);
-      return response.data.data;
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Error fetching order';
-      setError(errorMessage);
+      console.error('Error fetching orders:', error);
+      toast.error('Error fetching your orders');
       throw error;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const createOrder = async (orderData) => {
+  // Get single order by ID
+  const getOrderById = async (orderId) => {
     try {
-      if (!isLoggedIn) {
-        throw new Error('User not logged in');
-      }
-
       setLoading(true);
-      setError(null);
-
-      try {
-        orderSchema.parse(orderData);
-      } catch (validationError) {
-        const errorMessages = validationError.errors
-          .map(err => `${err.path.join('.')}: ${err.message}`)
-          .join('\n');
-        throw new Error(`Validation failed:\n${errorMessages}`);
+      const response = await orderApi.getOrderById(orderId);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch order');
       }
 
-      const response = await orderApi.createOrder(orderData);
-      await clearCart();
-      setCurrentOrder(response.data.data);
-      
-      // Refresh orders list after creating new order
-      await getMyOrders();
-      
-      toast.success('Order placed successfully!');
-      return response.data.data;
+      const orderData = response.data.data;
+      setCurrentOrder(orderData);
+      return orderData;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Error creating order';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      console.error('Error fetching order:', error);
+      toast.error('Failed to load order details');
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
+  // Create new order
+  const createOrder = async (orderData) => {
+    try {
+      setLoading(true);
+      console.log('Creating order with data:', orderData);
+
+      const response = await orderApi.createOrder(orderData);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to create order');
+      }
+
+      const newOrder = response.data.data;
+      setCurrentOrder(newOrder);
+      setOrders(prev => [newOrder, ...prev]);
+      
+      await clearCart();
+      return newOrder;
+    } catch (error) {
+      console.error('Order creation error:', error);
+      const message = error.response?.data?.message || 'Failed to create order';
+      toast.error(message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cancel order
   const cancelOrder = async (orderId) => {
     try {
       setLoading(true);
-      setError(null);
-      
       const response = await orderApi.cancelOrder(orderId);
       
-      // Update local state
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order._id === orderId 
-            ? { ...order, status: 'cancelled' }
-            : order
-        )
-      );
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to cancel order');
+      }
 
+      // Update local state
+      setOrders(prev => prev.map(order => 
+        order._id === orderId ? { ...order, status: 'cancelled' } : order
+      ));
+      
+      if (currentOrder?._id === orderId) {
+        setCurrentOrder(prev => ({ ...prev, status: 'cancelled' }));
+      }
+
+      toast.success('Order cancelled successfully');
       return response.data.data;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to cancel order';
-      setError(errorMessage);
+      console.error('Error cancelling order:', error);
+      toast.error('Failed to cancel order');
       throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const value = {
-    // State
-    orders,
-    currentOrder,
-    loading,
-    error,
-    // Methods
-    resetError,
-    createOrder,
-    getMyOrders,
-    getOrderById,
-    cancelOrder
+  // Get order tracking information
+  const getOrderTracking = async (orderId) => {
+    try {
+      setLoading(true);
+      const response = await orderApi.getOrderTracking(orderId);
+      
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to get tracking info');
+      }
+
+      return response.data.tracking;
+    } catch (error) {
+      console.error('Error fetching tracking:', error);
+      toast.error('Failed to load tracking information');
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <OrderContext.Provider value={value}>
+    <OrderContext.Provider value={{
+      orders,
+      currentOrder,
+      loading,
+      error,
+      getMyOrders,
+      getOrderById,
+      createOrder,
+      cancelOrder,
+      getOrderTracking
+    }}>
       {children}
     </OrderContext.Provider>
   );
