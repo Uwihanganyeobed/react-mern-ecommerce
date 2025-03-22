@@ -25,6 +25,7 @@ import OrderHistory from "./components/OrderHistory";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import PaymentForm from './components/PaymentForm';
+import PaymentSuccess from './components/PaymentSuccess';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
@@ -130,6 +131,9 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Payment Success Route */}
+      <Route path="/payment-success" element={<PaymentSuccess />} />
 
       {/* 404 Route - Must be last */}
       <Route path="*" element={<NotFound />} />

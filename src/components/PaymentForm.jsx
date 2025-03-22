@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { usePayment } from '../context/paymentContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useOrders } from '../context/orderContext';
 import { toast } from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
+import { usePayment } from '../context/paymentContext';
+import { payment } from '../services/api';
 import { 
   CreditCardIcon, 
   BanknotesIcon, 
@@ -13,15 +13,14 @@ import {
 } from '@heroicons/react/24/outline';
 
 const PaymentForm = () => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const { processPayment, loading } = usePayment();
   const navigate = useNavigate();
   const { id: orderId } = useParams();
   const { getOrderById } = useOrders();
+  const { getStripe } = usePayment();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -34,7 +33,7 @@ const PaymentForm = () => {
       }
     };
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, getOrderById, navigate]);
 
   const handlePaymentMethodChange = (method) => {
     setPaymentMethod(method);
@@ -44,37 +43,91 @@ const PaymentForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError(null);
-
-    if (!stripe || !elements) {
-      return;
-    }
+    setLoading(true);
 
     try {
-      const cardElement = elements.getElement(CardElement);
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-      });
-
-      if (error) {
-        setError(error.message);
-        return;
-      }
-
-      const result = await processPayment(
-        orderId,
-        paymentMethod.id,
-        'card',
-        stripe
-      );
-
-      if (result) {
+      if (paymentMethod === 'card') {
+        try {
+          setLoading(true);
+          
+          console.log("Stripe publishable key:", process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY ? "Key exists" : "Key missing");
+          
+          // Create Checkout Session for card payment
+          const response = await payment.createCheckoutSession(order._id);
+          
+          if (!response.data.success) {
+            throw new Error(response.data.message || 'Failed to create checkout session');
+          }
+          
+          // Use the URL provided by Stripe directly
+          if (response.data.url) {
+            window.location.href = response.data.url;
+            return;
+          } else if (response.data.sessionId) {
+            // Fallback to the old method if url is not provided
+            window.location.href = `https://checkout.stripe.com/pay/${response.data.sessionId}`;
+            return;
+          } else {
+            throw new Error('No checkout URL or session ID provided');
+          }
+        } catch (err) {
+          console.error('Payment error:', err);
+          setError(err.message || 'Payment processing failed');
+          setLoading(false);
+        }
+      } else if (paymentMethod === 'bank_transfer') {
+        // Handle bank transfer payment
+        await payment.processAlternativePayment(order._id, 'bank_transfer');
+        
         navigate(`/order-confirmation`, {
-          state: { orderId: orderId }
+          state: { orderId: order._id, isNewOrder: true }
+        });
+      } else if (paymentMethod === 'cash') {
+        // Handle cash on delivery
+        await payment.processAlternativePayment(order._id, 'cash');
+        
+        navigate(`/order-confirmation`, {
+          state: { orderId: order._id, isNewOrder: true }
         });
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      console.error('Payment error:', err);
+      setError(err.message || 'Payment processing failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTestCheckout = async () => {
+    try {
+      setLoading(true);
+      
+      // Log the Stripe key (remove in production)
+      console.log("Stripe key available:", process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY ? "Yes" : "No");
+      
+      // Use the test checkout endpoint
+      const response = await payment.createTestCheckout();
+      
+      if (!response.data.success || !response.data.sessionId) {
+        throw new Error(response.data.message || 'Failed to create test checkout session');
+      }
+      
+      console.log("Test session created successfully:", response.data.sessionId);
+      
+      // Direct redirect to Stripe with the publishable key as a query parameter
+      const sessionId = response.data.sessionId;
+      const publishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+      
+      if (!publishableKey) {
+        throw new Error("Stripe publishable key is not available");
+      }
+      
+      // Redirect with the API key as a query parameter
+      window.location.href = `https://checkout.stripe.com/pay/${sessionId}?apiKey=${encodeURIComponent(publishableKey)}`;
+    } catch (err) {
+      console.error('Test checkout error:', err);
+      setError(err.message || 'Test checkout failed');
+      setLoading(false);
     }
   };
 
@@ -113,111 +166,71 @@ const PaymentForm = () => {
                     <label className="relative flex p-4 border rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
                       <input
                         type="radio"
+                        name="paymentMethod"
                         value="card"
                         checked={paymentMethod === 'card'}
                         onChange={() => handlePaymentMethodChange('card')}
                         className="sr-only"
                       />
                       <div className="flex items-center">
-                        <CreditCardIcon className={`w-6 h-6 ${paymentMethod === 'card' ? 'text-indigo-600' : 'text-gray-400'}`} />
-                        <div className="ml-3">
-                          <span className={`text-sm font-medium ${paymentMethod === 'card' ? 'text-indigo-600' : 'text-gray-900'}`}>
-                            Credit/Debit Card
-                          </span>
-                          <p className="text-xs text-gray-500">Pay securely with your card</p>
+                        <CreditCardIcon className="h-6 w-6 text-indigo-600 mr-3" />
+                        <div>
+                          <span className="block text-sm font-medium text-gray-900">Credit/Debit Card</span>
+                          <span className="block text-sm text-gray-500">Pay securely with your card</span>
                         </div>
                       </div>
-                      {paymentMethod === 'card' && (
-                        <div className="absolute top-0 right-0 h-full flex items-center pr-4">
-                          <div className="h-3 w-3 rounded-full bg-indigo-600"></div>
-                        </div>
-                      )}
+                      <div className={`absolute inset-0 rounded-lg ring-2 ${paymentMethod === 'card' ? 'ring-indigo-500' : 'ring-transparent'}`} aria-hidden="true" />
                     </label>
 
                     <label className="relative flex p-4 border rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
                       <input
                         type="radio"
+                        name="paymentMethod"
                         value="bank_transfer"
                         checked={paymentMethod === 'bank_transfer'}
                         onChange={() => handlePaymentMethodChange('bank_transfer')}
                         className="sr-only"
                       />
                       <div className="flex items-center">
-                        <BanknotesIcon className={`w-6 h-6 ${paymentMethod === 'bank_transfer' ? 'text-indigo-600' : 'text-gray-400'}`} />
-                        <div className="ml-3">
-                          <span className={`text-sm font-medium ${paymentMethod === 'bank_transfer' ? 'text-indigo-600' : 'text-gray-900'}`}>
-                            Bank Transfer
-                          </span>
-                          <p className="text-xs text-gray-500">Pay via bank transfer</p>
+                        <BanknotesIcon className="h-6 w-6 text-indigo-600 mr-3" />
+                        <div>
+                          <span className="block text-sm font-medium text-gray-900">Bank Transfer</span>
+                          <span className="block text-sm text-gray-500">Pay via bank transfer</span>
                         </div>
                       </div>
-                      {paymentMethod === 'bank_transfer' && (
-                        <div className="absolute top-0 right-0 h-full flex items-center pr-4">
-                          <div className="h-3 w-3 rounded-full bg-indigo-600"></div>
-                        </div>
-                      )}
+                      <div className={`absolute inset-0 rounded-lg ring-2 ${paymentMethod === 'bank_transfer' ? 'ring-indigo-500' : 'ring-transparent'}`} aria-hidden="true" />
                     </label>
 
                     <label className="relative flex p-4 border rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
                       <input
                         type="radio"
+                        name="paymentMethod"
                         value="cash"
                         checked={paymentMethod === 'cash'}
                         onChange={() => handlePaymentMethodChange('cash')}
                         className="sr-only"
                       />
                       <div className="flex items-center">
-                        <TruckIcon className={`w-6 h-6 ${paymentMethod === 'cash' ? 'text-indigo-600' : 'text-gray-400'}`} />
-                        <div className="ml-3">
-                          <span className={`text-sm font-medium ${paymentMethod === 'cash' ? 'text-indigo-600' : 'text-gray-900'}`}>
-                            Cash on Delivery
-                          </span>
-                          <p className="text-xs text-gray-500">Pay when you receive</p>
+                        <TruckIcon className="h-6 w-6 text-indigo-600 mr-3" />
+                        <div>
+                          <span className="block text-sm font-medium text-gray-900">Cash on Delivery</span>
+                          <span className="block text-sm text-gray-500">Pay when you receive your order</span>
                         </div>
                       </div>
-                      {paymentMethod === 'cash' && (
-                        <div className="absolute top-0 right-0 h-full flex items-center pr-4">
-                          <div className="h-3 w-3 rounded-full bg-indigo-600"></div>
-                        </div>
-                      )}
+                      <div className={`absolute inset-0 rounded-lg ring-2 ${paymentMethod === 'cash' ? 'ring-indigo-500' : 'ring-transparent'}`} aria-hidden="true" />
                     </label>
                   </div>
-                </div>
 
-                {/* Card Payment Form */}
-                {paymentMethod === 'card' && (
-                  <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Card Details</h3>
-                    <div className="border rounded-md p-4">
-                      <CardElement
-                        options={{
-                          style: {
-                            base: {
-                              fontSize: '16px',
-                              color: '#424770',
-                              '::placeholder': {
-                                color: '#aab7c4',
-                              },
-                            },
-                            invalid: {
-                              color: '#9e2146',
-                            },
-                          },
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="bg-red-50 border-l-4 border-red-400 p-4">
-                    <div className="flex">
-                      <div className="ml-3">
-                        <p className="text-sm text-red-700">{error}</p>
+                  {error && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4 mt-4">
+                      <div className="flex">
+                        <div className="ml-3">
+                          <p className="text-sm text-red-700">{error}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
@@ -276,6 +289,17 @@ const PaymentForm = () => {
                     ) : (
                       `Pay $${order.total.toFixed(2)}`
                     )}
+                  </button>
+                </div>
+
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={handleTestCheckout}
+                    className="mt-4 w-full bg-green-600 py-2 px-4 text-white rounded hover:bg-green-700"
+                    disabled={loading}
+                  >
+                    {loading ? <ClipLoader color="#ffffff" size={20} /> : 'Test Checkout (Simple Product)'}
                   </button>
                 </div>
               </div>

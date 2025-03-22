@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const API_URL = 'http://localhost:5000';
-const API_URL = 'https://react-mern-back-end.onrender.com';
+const API_URL = 'http://localhost:5000';
+// const API_URL = 'https://react-mern-back-end.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -138,8 +138,22 @@ const order = {
 
 // Payment endpoints
 const payment = {
-  createPaymentIntent: () => api.post('/payments/create-intent'),
-  verifyPayment: () => api.post('/payments/verify'),
+  createTestCheckout: () => api.post('/payments/test-checkout'),
+  verifyCheckoutSession: (sessionId, orderId) => api.post('/payments/verify-checkout-session', { 
+    sessionId, 
+    orderId 
+  }),
+  createCheckoutSession: (orderId) => api.post('/payments/create-checkout-session', { orderId }),
+  processAlternativePayment: (orderId, method) => api.post('/payments/process', { 
+    orderId, 
+    paymentMethod: method 
+  }),
+  createPaymentIntent: (orderId) => api.post('/payments/create-intent', { orderId }),
+  verifyPayment: (paymentIntentId) => api.post('/payments/verify', { paymentIntentId }),
+  updatePaymentIntent: (paymentIntentId, method) => api.post('/payments/update-intent', { 
+    paymentIntentId, 
+    method 
+  }),
   getPaymentStatus: () => api.get('/payments/status/:paymentId')
 };
 
