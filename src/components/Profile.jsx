@@ -39,6 +39,8 @@ const Profile = () => {
   };
 
   useEffect(() => {
+    console.log("Profile component mounted");
+    console.log("Current user in Profile:", user);
     if (user) {
       console.log('User object:', user);
       setFormData({
@@ -107,6 +109,8 @@ const Profile = () => {
       toast.error('Failed to resend verification email');
     }
   };
+
+  console.log("Rendering Profile component");
 
   if (!user) {
     return (

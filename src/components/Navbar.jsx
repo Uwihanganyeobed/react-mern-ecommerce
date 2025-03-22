@@ -98,6 +98,11 @@ export default function Navbar() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const handleProfileClick = (e) => {
+    console.log("Profile link clicked");
+    // If you're using event handlers, make sure they're working correctly
+  };
+
   return (
     <header className="bg-white text-semibold text-xl" id="home">
       {/* Announcement bar */}
@@ -220,6 +225,7 @@ export default function Navbar() {
                 <>
                   <Link
                     to="/profile"
+                    onClick={handleProfileClick}
                     className="flex items-center space-x-2 text-lg font-medium text-gray-700 hover:text-blue-600"
                   >
                     <UserCircleIcon className="h-6 w-6" />
@@ -420,6 +426,7 @@ export default function Navbar() {
               <>
                 <Link
                   to="/profile"
+                  onClick={handleProfileClick}
                   className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
                   title="Profile"
                 >

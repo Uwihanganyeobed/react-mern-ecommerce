@@ -14,37 +14,46 @@ import { OrderProvider } from './context/orderContext';
 import { PaymentProvider } from './context/paymentContext';
 import { CouponProvider } from './context/couponContext';
 import { SubscriberProvider } from './context/subscriberContext';
+import AuthDebug from './components/AuthDebug';
+import React, { useEffect } from 'react';
 
 export default function App() {
+  useEffect(() => {
+    console.log("App component mounted");
+    return () => console.log("App component unmounted");
+  }, []);
+
+  console.log("App rendering");
+  
   return (
     <BrowserRouter>
-    <AuthProvider>
-      <UserProvider>
-        <ProductProvider>
-          <CartProvider>
-            <OrderProvider>
-              <PaymentProvider>
-                <CouponProvider>
-                      <SubscriberProvider>
-                          <SearchProvider>
-                            <div className="flex flex-col min-h-screen">
-                              <Navbar />
-                              <div className="flex flex-col flex-grow">
-                                <AppRoutes /> {/* Use AppRoutes component */}
-                              </div>
-                              <Footer />
-                              <ToastContainer />
-                            </div>
-                          </SearchProvider>
-                      </SubscriberProvider>
-                </CouponProvider>
-              </PaymentProvider>
-            </OrderProvider>
-          </CartProvider>
-        </ProductProvider>
-      </UserProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <UserProvider>
+          <ProductProvider>
+            <CartProvider>
+              <OrderProvider>
+                <PaymentProvider>
+                  <CouponProvider>
+                    <SubscriberProvider>
+                      <SearchProvider>
+                        <div className="flex flex-col min-h-screen">
+                          <Navbar />
+                          <div className="flex flex-col flex-grow bg-gray-50" style={{ minHeight: '500px' }}>
+                            <AppRoutes />
+                          </div>
+                          <Footer />
+                          <ToastContainer />
+                          {process.env.NODE_ENV === 'development' && <AuthDebug />}
+                        </div>
+                      </SearchProvider>
+                    </SubscriberProvider>
+                  </CouponProvider>
+                </PaymentProvider>
+              </OrderProvider>
+            </CartProvider>
+          </ProductProvider>
+        </UserProvider>
+      </AuthProvider>
     </BrowserRouter>
-
   );
 }

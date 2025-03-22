@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useSearch } from '../context/searchContext';
 import { useProducts } from '../context/productContext';
 import { AdjustmentsHorizontalIcon, XMarkIcon } from "@heroicons/react/24/outline";

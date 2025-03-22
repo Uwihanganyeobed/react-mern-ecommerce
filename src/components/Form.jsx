@@ -7,7 +7,7 @@ import { useAuth } from '../context/authContext';
 export default function Form({ type }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register } = useAuth();
+  const { login, register, checkAuthStatus } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -32,18 +32,28 @@ export default function Form({ type }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
 
     try {
       const schema = formSchema(type);
       await schema.parseAsync(formData);
-  
+
       if (type === "login") {
+        console.log("Attempting login with:", formData.email);
         const success = await login({
           email: formData.email,
           password: formData.password
         });
+        
         if (success) {
+          console.log("Login successful, checking auth status");
+          // Force a re-check of auth status after login
+          await checkAuthStatus();
+          console.log("Auth status checked, navigating to:", from);
           navigate(from);  // Redirect to the protected route they tried to access
+        } else {
+          console.log("Login failed");
+          setErrors({ general: "Login failed. Please check your credentials." });
         }
       } else {
         await register(formData);
@@ -53,6 +63,7 @@ export default function Form({ type }) {
         });
       }
     } catch (error) {
+      console.error("Form submission error:", error);
       if (error.errors) {
         error.errors.forEach(err => toast.error(err.message));
       } else {

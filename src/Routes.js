@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
+import PersistLogin from "./components/PersistLogin";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Form from "./components/Form";
 import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
@@ -43,100 +44,45 @@ const MainPage = () => {
 };
 
 export default function AppRoutes() {
+  console.log("Rendering AppRoutes");
+  
   return (
     <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<MainPage />} />
-      <Route path="/register" element={<Form type="signup" />} />
-      <Route path="/register/confirmation" element={<RegisterConfirmation />} />
-      <Route path="/verify-email/:token" element={<VerifyEmail />} />
-      <Route path="/login" element={<Form type="login" />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route element={<PersistLogin />}>
+        {/* Public Routes */}
+        <Route path="/" element={<MainPage />} />
+        <Route path="/register" element={<Form type="signup" />} />
+        <Route path="/register/confirmation" element={<RegisterConfirmation />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/login" element={<Form type="login" />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/product/:id" element={<MonoProduct />} />
+        <Route path="/search" element={<SearchResults />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/one" element={<Reviews />} />
 
-      {/* Protected Routes */}
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/cart"
-        element={
-          <ProtectedRoute>
-            <Cart />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/checkout"
-        element={
-          <ProtectedRoute>
-            <Checkout />
-          </ProtectedRoute>
-        }
-      />
-      <Route 
-        path="/order-confirmation"
-        element={
-          <ProtectedRoute>
-            <OrderConfirmation />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/order-history"
-        element={
-          <ProtectedRoute>
-            <OrderHistory />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Static Routes */}
-      <Route path="/one" element={<Reviews />} />
-      <Route path="/search" element={<SearchResults />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/blog" element={<Blog />} />
-
-      {/* Product Routes */}
-      <Route path="/product/:id" element={<MonoProduct />} />
-      <Route path="/blog/:id" element={<MonoProduct />} />
-      <Route path="/featured/:id" element={<MonoProduct />} />
-      <Route path="/new/:id" element={<MonoProduct />} />
-      <Route path="/category/:id" element={<MonoProduct />} />
-
-      {/* Order Details Route */}
-      <Route
-        path="/order/:id"
-        element={
-          <ProtectedRoute>
-            <OrderDetails />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Payment Route */}
-      <Route
-        path="/order/:id/payment"
-        element={
-          <ProtectedRoute>
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
+          <Route path="/order/:id/payment" element={
             <Elements stripe={stripePromise}>
               <PaymentForm />
             </Elements>
-          </ProtectedRoute>
-        }
-      />
+          } />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
+        </Route>
 
-      {/* Payment Success Route */}
-      <Route path="/payment-success" element={<PaymentSuccess />} />
-
-      {/* 404 Route - Must be last */}
-      <Route path="*" element={<NotFound />} />
+        {/* 404 Route - Must be last */}
+        <Route path="*" element={<NotFound />} />
+      </Route>
     </Routes>
   );
 }

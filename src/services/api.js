@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
-// const API_URL = 'https://react-mern-back-end.onrender.com';
+// const API_URL = 'http://localhost:5000';
+const API_URL = 'https://react-mern-back-end.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -13,15 +13,163 @@ const api = axios.create({
 // Token management
 const setAuthToken = (token) => {
   if (token) {
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    console.log("Setting auth token in API service");
+    // Ensure the token is properly formatted as a Bearer token
+    const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = formattedToken;
+    localStorage.setItem('token', token); // Store the original token
   } else {
+    console.log("Removing auth token in API service");
     delete api.defaults.headers.common['Authorization'];
+    localStorage.removeItem('token');
   }
 };
 
 const removeAuthToken = () => {
+  console.log("Removing auth token in API service");
   delete api.defaults.headers.common['Authorization'];
+  localStorage.removeItem('token');
 };
+
+// Initialize auth token from localStorage on app load
+const initializeAuth = () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    console.log("Initializing auth token from localStorage");
+    // Ensure the token is properly formatted as a Bearer token
+    const formattedToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = formattedToken;
+    return true;
+  }
+  return false;
+};
+
+// Call this immediately
+const tokenInitialized = initializeAuth();
+console.log("Token initialized on load:", tokenInitialized);
+
+// Token refresh mechanism
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
+// Add interceptor for response errors
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+    
+    // If error is not 401 or request has already been retried, reject
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
+    
+    if (isRefreshing) {
+      // If token refresh is in progress, queue this request
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      })
+        .then(token => {
+          originalRequest.headers['Authorization'] = `Bearer ${token}`;
+          return api(originalRequest);
+        })
+        .catch(err => Promise.reject(err));
+    }
+    
+    originalRequest._retry = true;
+    isRefreshing = true;
+    
+    try {
+      // Call your refresh token endpoint
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+      
+      const response = await api.post('/auth/refresh-token', { refreshToken });
+      const { token } = response.data;
+      
+      localStorage.setItem('token', token);
+      setAuthToken(token);
+      
+      // Update authorization header for the original request
+      originalRequest.headers['Authorization'] = `Bearer ${token}`;
+      
+      // Process any queued requests
+      processQueue(null, token);
+      
+      return api(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError, null);
+      
+      // Clear auth state on refresh failure
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      removeAuthToken();
+      
+      // Redirect to login
+      window.location.href = '/login';
+      
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
+
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  config => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`%c API Request: ${config.method.toUpperCase()} ${config.url} %c`, 
+        'background: #34d399; color: black; padding: 2px 4px; border-radius: 3px;', 
+        '', 
+        config.data || '');
+      
+      // Log if Authorization header is present
+      const hasAuth = !!config.headers.Authorization;
+      console.log(`Request has Authorization header: ${hasAuth ? '✅' : '❌'}`);
+    }
+    return config;
+  },
+  error => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  response => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`%c API Response: ${response.config.method.toUpperCase()} ${response.config.url} %c`, 
+        'background: #8b5cf6; color: white; padding: 2px 4px; border-radius: 3px;', 
+        '', 
+        response.status, response.data);
+    }
+    return response;
+  },
+  error => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`%c API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url} %c`, 
+        'background: #ef4444; color: white; padding: 2px 4px; border-radius: 3px;', 
+        '', 
+        error.response?.status, error.response?.data);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Auth endpoints
 const auth = {
@@ -30,10 +178,11 @@ const auth = {
   logout: () => api.post('/auth/logout'),
   getCurrentUser: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
-  resetPassword: (token, newPassword) => api.post(`/auth/reset-password/${token}`, { password: newPassword }),
-  changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
+  resetPassword: (token, newPassword) => 
+    api.post('/auth/reset-password', { token, newPassword }),
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
   resendVerification: () => api.post('/auth/resend-verification'),
+  changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
   checkUserRole: () => api.get('/auth/check-role')
 };
 
@@ -175,12 +324,12 @@ const subscription = {
   verifySubscription: (token) => api.get(`/subscribers/verify/${token}`)
 };
 
-
-
+// Export everything
 export { 
   api, 
   setAuthToken, 
   removeAuthToken, 
+  initializeAuth,
   auth, 
   user, 
   product, 
