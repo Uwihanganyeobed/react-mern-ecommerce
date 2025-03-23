@@ -27,6 +27,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import PaymentForm from './components/PaymentForm';
 import PaymentSuccess from './components/PaymentSuccess';
+import Wishlist from './components/Wishlist';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
@@ -78,6 +79,7 @@ export default function AppRoutes() {
             </Elements>
           } />
           <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/wishlist" element={<Wishlist />} />
         </Route>
 
         {/* 404 Route - Must be last */}

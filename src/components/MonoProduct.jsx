@@ -1,31 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { StarIcon } from "@heroicons/react/20/solid";
 import { RadioGroup } from "@headlessui/react";
-import { Link, useParams, useLocation } from "react-router-dom";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import RelatedProducts from "../components/RelatedProducts";
 import { toast } from 'react-toastify';
 import { useProducts } from '../context/productContext';
 import { useCart } from '../context/cartContext';
+import { useAuth } from '../context/authContext';
+import { useUser } from '../context/userContext';
+import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
+import { ClipLoader } from 'react-spinners';
+import RatingForm from './RatingForm';
 
 export default function MonoProduct() {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const { 
     getProductById, 
     getNewProduct, 
     getFeaturedProduct, 
     getCategoryProduct,
-    getBlogProduct 
+    getBlogProduct,
+    getRelatedProducts
   } = useProducts();
   
   // Import cart context functions
   const { addToCart, loading: cartLoading } = useCart();
+  const { isLoggedIn } = useAuth();
+  const { wishlist, addToWishlist, removeFromWishlist } = useUser();
   
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [showRatingForm, setShowRatingForm] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -76,6 +92,10 @@ export default function MonoProduct() {
             setSelectedSize(productData.sizes[0]);
           }
         }
+
+        // Get related products
+        const related = await getRelatedProducts(id);
+        setRelatedProducts(related);
       } catch (error) {
         console.error("Error fetching product:", error);
         toast.error("Failed to load product details");
@@ -85,36 +105,60 @@ export default function MonoProduct() {
     };
     
     fetchProduct();
-  }, [id, location.pathname, getProductById, getNewProduct, getFeaturedProduct, getCategoryProduct, getBlogProduct]);
+  }, [id, location.pathname, getProductById, getNewProduct, getFeaturedProduct, getCategoryProduct, getBlogProduct, getRelatedProducts]);
 
-const handleAddToCart = async () => {
-  try {
-    // Determine which ID to use (_id or id)
-    const productId = product._id || product.id;
-    
-    if (!productId) {
-      toast.error("Could not determine product ID");
+  // Check if product is in wishlist
+  useEffect(() => {
+    if (product && wishlist) {
+      const productInWishlist = wishlist.some(item => item._id === product._id);
+      setIsInWishlist(productInWishlist);
+    }
+  }, [product, wishlist]);
+
+  const handleAddToCart = async () => {
+    if (!isLoggedIn) {
+      toast.info('Please login to add items to cart');
+      navigate('/login', { state: { from: `/product/${id}` } });
       return;
     }
     
-    // Include color and size information if available
-    const options = {};
-    if (selectedColor) {
-      options.color = selectedColor.name || selectedColor;
+    try {
+      setAddingToCart(true);
+      await addToCart(product._id, quantity);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add product to cart');
+    } finally {
+      setAddingToCart(false);
     }
-    if (selectedSize) {
-      options.size = selectedSize.name || selectedSize;
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!isLoggedIn) {
+      toast.info('Please login to add items to wishlist');
+      navigate('/login', { state: { from: `/product/${id}` } });
+      return;
     }
     
-    // Call the addToCart function from the cart context with options
-    await addToCart(productId, quantity, options);
-    
-    // Toast success is handled in the context
-  } catch (error) {
-    console.error("Error adding to cart:", error);
-    toast.error("Failed to add product to cart");
-  }
-};
+    try {
+      setWishlistLoading(true);
+      
+      if (isInWishlist) {
+        await removeFromWishlist(product._id);
+        toast.success('Removed from wishlist');
+        setIsInWishlist(false);
+      } else {
+        await addToWishlist(product._id);
+        toast.success('Added to wishlist');
+        setIsInWishlist(true);
+      }
+    } catch (error) {
+      console.error('Error updating wishlist:', error);
+      toast.error('Failed to update wishlist');
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
   const incrementQuantity = () => {
     setQuantity(prev => prev + 1);
@@ -126,21 +170,33 @@ const handleAddToCart = async () => {
     }
   };
 
+  const handleRatingSubmit = (data) => {
+    setProduct(prev => ({
+      ...prev,
+      averageRating: data.averageRating
+    }));
+    setShowRatingForm(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        <ClipLoader color="#4F46E5" size={50} />
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <p className="text-gray-500 mb-4">Product not found</p>
-        <Link to="/products" className="text-indigo-600 hover:text-indigo-800">
-          Return to Products
-        </Link>
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900">Product not found</h2>
+        <p className="mt-2 text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
+        <button 
+          onClick={() => navigate('/')}
+          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+        >
+          Return to Home
+        </button>
       </div>
     );
   }
@@ -164,7 +220,7 @@ const handleAddToCart = async () => {
             src={
               selectedColor?.image || 
               product.thumbnail || 
-              (product.images && product.images.length > 0 ? product.images[0].url : '') ||
+              (product.images && product.images.length > 0 ? product.images[selectedImage].url : '') ||
               '/placeholder.jpg'
             }
             className="h-full w-full object-cover rounded-lg"
@@ -291,26 +347,164 @@ const handleAddToCart = async () => {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
-            <button
-              className={`mt-6 w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ${
-                cartLoading ? 'opacity-75 cursor-not-allowed' : ''
-              }`}
-              onClick={handleAddToCart}
-              disabled={cartLoading}
-            >
-              {cartLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Adding to Cart...
-                </span>
-              ) : (
-                'Add to Cart'
+            {/* Product Actions Section - Redesigned */}
+            <div className="mt-8 space-y-6">
+              {/* Add to Cart and Wishlist Row */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Add to Cart Button */}
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={addingToCart || product.stock <= 0}
+                  className="flex-1 flex items-center justify-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {addingToCart ? (
+                    <ClipLoader color="#ffffff" size={24} />
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+                      </svg>
+                      {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                    </>
+                  )}
+                </button>
+
+                {/* Wishlist Button - Redesigned */}
+                <button
+                  type="button"
+                  onClick={handleToggleWishlist}
+                  disabled={wishlistLoading}
+                  className={`flex items-center justify-center px-6 py-3 border rounded-lg shadow-sm text-base font-medium transition-all duration-200 ${
+                    isInWishlist 
+                      ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' 
+                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                >
+                  {wishlistLoading ? (
+                    <ClipLoader color="#4F46E5" size={24} />
+                  ) : isInWishlist ? (
+                    <>
+                      <HeartSolid className="h-6 w-6 text-red-500" />
+                      <span className="ml-2 hidden sm:inline">In Wishlist</span>
+                    </>
+                  ) : (
+                    <>
+                      <HeartOutline className="h-6 w-6 text-gray-400" />
+                      <span className="ml-2 hidden sm:inline">Add to Wishlist</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Product Rating Summary */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="flex items-center">
+                      {[0, 1, 2, 3, 4].map((rating) => (
+                        <StarIcon
+                          key={rating}
+                          className={`${
+                            product.averageRating > rating ? 'text-yellow-400' : 'text-gray-300'
+                          } h-5 w-5 flex-shrink-0`}
+                          aria-hidden="true"
+                        />
+                      ))}
+                    </div>
+                    <p className="ml-2 text-sm text-gray-700">
+                      {product.averageRating ? product.averageRating.toFixed(1) : 'No ratings yet'} 
+                      {product.ratings?.length > 0 && (
+                        <span className="ml-1 text-gray-500">({product.ratings.length} {product.ratings.length === 1 ? 'review' : 'reviews'})</span>
+                      )}
+                    </p>
+                  </div>
+                  
+                  {isLoggedIn && (
+                    <button
+                      onClick={() => setShowRatingForm(!showRatingForm)}
+                      className="text-sm font-medium text-indigo-600 hover:text-indigo-500 flex items-center"
+                    >
+                      {showRatingForm ? 'Cancel' : 'Write a Review'}
+                      {!showRatingForm && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                        <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5z" />
+                      </svg>}
+                    </button>
+                  )}
+                </div>
+                
+                {/* Rating Form - Animated Slide Down */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showRatingForm ? 'max-h-96 mt-4 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  {showRatingForm && (
+                    <RatingForm 
+                      productId={product._id} 
+                      onRatingSubmit={handleRatingSubmit} 
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Reviews Section */}
+              {product.ratings && product.ratings.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium text-gray-900">Recent Reviews</h3>
+                  <div className="mt-2 space-y-4 max-h-80 overflow-y-auto pr-2">
+                    {product.ratings.slice(0, 3).map((review, index) => (
+                      <div key={index} className="bg-white p-4 rounded-lg border border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                              {review.user.avatar ? (
+                                <img className="h-10 w-10 rounded-full" src={review.user.avatar} alt="" />
+                              ) : (
+                                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                  <span className="text-indigo-800 font-medium text-sm">
+                                    {review.user.name?.charAt(0) || 'U'}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-gray-900">{review.user.name || 'Anonymous'}</p>
+                              <div className="flex items-center mt-1">
+                                {[0, 1, 2, 3, 4].map((rating) => (
+                                  <StarIcon
+                                    key={rating}
+                                    className={`${
+                                      review.rating > rating ? 'text-yellow-400' : 'text-gray-300'
+                                    } h-4 w-4`}
+                                    aria-hidden="true"
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {review.review && (
+                          <p className="mt-2 text-sm text-gray-600">{review.review}</p>
+                        )}
+                      </div>
+                    ))}
+                    {product.ratings.length > 3 && (
+                      <button 
+                        className="text-sm font-medium text-indigo-600 hover:text-indigo-500 mt-2 flex items-center"
+                        onClick={() => {/* Show all reviews */}}
+                      >
+                        View all {product.ratings.length} reviews
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
           </div>
 
           {/* Product Highlights */}
@@ -457,6 +651,37 @@ const handleAddToCart = async () => {
 
       {/* Related Products - Only show if product ID exists */}
       {(product._id || product.id) && <RelatedProducts id={product._id || product.id} />}
+
+      {/* Related products */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-16">
+          <h2 className="text-xl font-bold text-gray-900">Related Products</h2>
+          <div className="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+            {relatedProducts.map((relatedProduct) => (
+              <div key={relatedProduct._id} className="group relative">
+                <div className="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75">
+                  <img
+                    src={relatedProduct.thumbnail}
+                    alt={relatedProduct.title}
+                    className="w-full h-full object-center object-cover"
+                  />
+                </div>
+                <div className="mt-4 flex justify-between">
+                  <div>
+                    <h3 className="text-sm text-gray-700">
+                      <a href={`/product/${relatedProduct._id}`}>
+                        <span aria-hidden="true" className="absolute inset-0" />
+                        {relatedProduct.title}
+                      </a>
+                    </h3>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">${relatedProduct.price?.current.toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

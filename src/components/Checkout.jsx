@@ -9,6 +9,9 @@ import { useAuth } from "../context/authContext";
 import { useOrders } from "../context/orderContext";
 import { countires } from "../utils/items";
 import { toast } from "react-hot-toast";
+import CountrySelector from './CountrySelector';
+import { useCoupon } from '../context/couponContext';
+import CouponForm from './CouponForm';
 
 export default function Checkout() {
   const { cartItems, cartTotal } = useCart();
@@ -16,6 +19,7 @@ export default function Checkout() {
   const { createOrder } = useOrders();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { discount, activeCoupon, appliedCoupon } = useCoupon();
 
   // Default values that match the schema structure
   const defaultValues = {
@@ -38,6 +42,7 @@ export default function Checkout() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isValid }
   } = useForm({
     resolver: zodResolver(checkoutSchema),
@@ -76,7 +81,9 @@ export default function Checkout() {
           number: data.cardNumber,
           exp_month: parseInt(data.cardExpiry?.split('/')[0]),
           exp_year: parseInt('20' + data.cardExpiry?.split('/')[1])
-        } : null
+        } : null,
+        coupon: appliedCoupon ? appliedCoupon.code : null,
+        discount: discount
       };
 
       const order = await createOrder(orderData);
@@ -230,27 +237,11 @@ export default function Checkout() {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Country
-                    </label>
-                    <select
-                      className={`mt-1 block w-full px-3 py-2 border ${
-                        errors.country ? "border-red-500" : "border-gray-300"
-                      } rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                      {...register("country")}
-                    >
-                      <option value="">Select a country</option>
-                      {countires.map((country) => (
-                        <option key={country.id} value={country.name}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.country && (
-                      <p className="text-red-500 text-sm">
-                        {errors.country.message}
-                      </p>
-                    )}
+                    <CountrySelector
+                      value={watch('country')}
+                      onChange={(value) => setValue('country', value, { shouldValidate: true })}
+                      error={errors.country?.message}
+                    />
                   </div>
                 </div>
 
@@ -506,24 +497,34 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                <div className="mb-4 flex gap-2 flex-col">
-                  <div className="flex justify-between text-lg font-medium">
+                <div className="mt-6 border-t border-gray-200 pt-6">
+                  <CouponForm 
+                    cartTotal={cartTotal} 
+                    products={cartItems.map(item => ({
+                      id: item.product._id,
+                      price: item.product.price.current,
+                      quantity: item.quantity
+                    }))}
+                    onApply={(coupon) => {
+                      // You can add additional logic here if needed
+                    }}
+                  />
+                  
+                  <div className="flex justify-between text-base font-medium text-gray-900 mt-4">
                     <p>Subtotal</p>
-                    <p>${total.toFixed(2)}</p>
+                    <p>${cartTotal.toFixed(2)}</p>
                   </div>
-                  <div className="flex justify-between text-lg font-semibold text-gray-700">
-                    <p>Shipping</p>
-                    <p>${shippingCost.toFixed(2)}</p>
-                  </div>
-                  <div className="flex justify-between text-lg font-medium">
-                    <p>Taxes</p>
-                    <p>${tax.toFixed(2)}</p>
-                  </div>
-                </div>
-                <div className="border-t border-gray-200 py-4">
-                  <div className="flex justify-between text-xl font-bold">
+                  
+                  {discount > 0 && (
+                    <div className="flex justify-between text-base font-medium text-green-600 mt-2">
+                      <p>Discount</p>
+                      <p>-${discount.toFixed(2)}</p>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between text-lg font-bold text-gray-900 mt-2">
                     <p>Total</p>
-                    <p className="text-gray-700">${grandTotal.toFixed(2)}</p>
+                    <p>${(cartTotal - discount).toFixed(2)}</p>
                   </div>
                 </div>
                 <button

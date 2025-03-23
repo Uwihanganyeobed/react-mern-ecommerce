@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const API_URL = 'http://localhost:5000';
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = 'http://localhost:5000';
+// const API_URL = process.env.REACT_APP_API_URL;
 
 const api = axios.create({
   baseURL: API_URL,
@@ -179,7 +179,7 @@ const auth = {
   getCurrentUser: () => api.get('/auth/me'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, newPassword) => 
-    api.post('/auth/reset-password', { token, newPassword }),
+    api.post(`/auth/reset-password/${token}`, { password: newPassword }),
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
   resendVerification: () => api.post('/auth/resend-verification'),
   changePassword: (currentPassword, newPassword) => api.post('/auth/change-password', { currentPassword, newPassword }),
@@ -200,8 +200,9 @@ const user = {
   
   // Wishlist management
   getWishlist: () => api.get('/users/wishlist'),
-  addToWishlist: (productId) => api.post(`/users/wishlist/${productId}`),
-  removeFromWishlist: (productId) => api.delete(`/users/wishlist/${productId}`)
+  addToWishlist: (productId) => api.post('/users/wishlist', { productId }),
+  removeFromWishlist: (productId) => api.delete(`/users/wishlist/${productId}`),
+
 };
 
 // Product endpoints
@@ -262,7 +263,11 @@ const product = {
   getProductById: (id) => api.get(`/products/${id}`),
   getRelatedProducts: (id) => api.get(`/products/${id}/related`),
   getProductReviews: (id) => api.get(`/products/${id}/reviews`),
-  addProductReview: (id, reviewData) => api.post(`/products/${id}/reviews`, reviewData)
+  addProductReview: (id, reviewData) => api.post(`/products/${id}/reviews`, reviewData),
+  rateProduct: (productId, ratingData) => 
+    api.post(`/products/${productId}/rate`, ratingData),
+  getProductRatings: (productId) => 
+    api.get(`/products/${productId}/ratings`),
 };
 // Cart endpoints
 const cart = {
@@ -308,7 +313,7 @@ const payment = {
 
 // Coupon endpoints
 const coupon = {
-  validateCoupon: (couponCode) => api.post('/coupons/validate', { code: couponCode })
+  validateCoupon: (data) => api.post('/coupons/validate', data),
 };
 
 // Contact endpoints

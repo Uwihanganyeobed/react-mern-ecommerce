@@ -2,6 +2,8 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/cartContext';
 import { useAuth } from '../context/authContext'; // Assuming you have an auth context
+import CouponForm from './CouponForm';
+import { useCoupon } from '../context/couponContext';
 
 export default function Cart() {
   const { 
@@ -13,6 +15,7 @@ export default function Cart() {
   } = useCart();
   
   const { isLoggedIn } = useAuth();
+  const { discount, activeCoupon } = useCoupon();
 
   // Handle quantity update
   const handleUpdateQuantity = (item, newQuantity) => {
@@ -118,29 +121,42 @@ export default function Cart() {
           </div>
         )}
 
-        {cartItems.length > 0 && (
-          <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
-            <div className="flex justify-between text-base font-medium text-gray-900">
-              <p>Subtotal</p>
-              <p>${cartTotal.toFixed(2)}</p>
+        <div className="border-t border-gray-200 py-6">
+          <CouponForm 
+            cartTotal={cartTotal} 
+            products={cartItems.map(item => ({
+              id: item.product._id,
+              price: item.product.price.current,
+              quantity: item.quantity
+            }))}
+          />
+          
+          <div className="flex justify-between text-base font-medium text-gray-900 mt-4">
+            <p>Subtotal</p>
+            <p>${cartTotal.toFixed(2)}</p>
+          </div>
+          
+          {discount > 0 && (
+            <div className="flex justify-between text-base font-medium text-green-600 mt-2">
+              <p>Discount</p>
+              <p>-${typeof discount === 'number' ? discount.toFixed(2) : '0.00'}</p>
             </div>
-
+          )}
+          
+          <div className="flex justify-between text-lg font-bold text-gray-900 mt-2">
+            <p>Total</p>
+            <p>${(cartTotal - (typeof discount === 'number' ? discount : 0)).toFixed(2)}</p>
+          </div>
+          
+          <div className="mt-6">
             <Link
               to="/checkout"
-              className={`mt-6 flex items-center justify-center rounded-md ${
-                loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
-              } px-6 py-3 text-base font-medium text-white shadow-sm`}
-              onClick={(e) => loading && e.preventDefault()}
+              className="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700"
             >
-              {loading ? 'Processing...' : 'Proceed to Checkout'}
-            </Link>
-            <Link
-              to="/"
-              className='mt-6 flex items-center justify-center rounded-md bg-cyan-200 py-2'
-              >Continue Shopping
+              Checkout
             </Link>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

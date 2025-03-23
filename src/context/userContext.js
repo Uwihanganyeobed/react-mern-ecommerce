@@ -85,30 +85,35 @@ export const UserProvider = ({ children }) => {
   // Wishlist Management
   const fetchWishlist = async () => {
     try {
+      setLoading(true);
       const response = await userApi.getWishlist();
-      setWishlist(response.data);
+      setWishlist(response.data.wishlist);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const addToWishlist = async (productId) => {
     try {
       const response = await userApi.addToWishlist(productId);
-      setWishlist(response.data);
-      toast.success('Added to wishlist');
+      setWishlist(response.data.wishlist);
+      return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error adding to wishlist');
+      throw error;
     }
   };
 
   const removeFromWishlist = async (productId) => {
     try {
-      await userApi.removeFromWishlist(productId);
-      setWishlist(wishlist.filter(item => item._id !== productId));
-      toast.success('Removed from wishlist');
+      const response = await userApi.removeFromWishlist(productId);
+      setWishlist(response.data.wishlist);
+      return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Error removing from wishlist');
+      throw error;
     }
   };
 

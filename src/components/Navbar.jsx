@@ -6,7 +6,9 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
   UserCircleIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { Link, useNavigate } from "react-router-dom";
 import { navigation } from "../utils/items";
 import { useAuth } from '../context/authContext';
@@ -14,6 +16,7 @@ import { useCart } from '../context/cartContext';
 import { useSearch } from '../context/searchContext';
 import { useOrders } from "../context/orderContext";
 import { useProducts } from '../context/productContext';
+import { useUser } from '../context/userContext';
 import { useClickOutside } from '../hooks/useClickOutside';
 
 export default function Navbar() {
@@ -28,8 +31,12 @@ export default function Navbar() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const searchRef = useRef(null);
   const { categories } = useProducts();
+  const { wishlist } = useUser();
   
   const { searchProducts } = useSearch();
+
+  const userMenuRef = useRef(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Close suggestions when clicking outside
   useClickOutside(searchRef, () => setShowSuggestions(false));
@@ -56,6 +63,19 @@ export default function Navbar() {
 
     return () => clearTimeout(timer);
   }, [query, selectedCategory]);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userMenuRef]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -115,180 +135,168 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Mobile menu */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        className="relative z-40 lg:hidden"
-      >
-        <div className="fixed inset-0 bg-black bg-opacity-25" />
-        <div className="fixed inset-0 z-40 flex">
-          <Dialog.Panel className="relative w-full max-w-xs bg-white p-6 shadow-xl">
-            <button onClick={() => setOpen(false)} className="text-gray-400">
-              <XMarkIcon className="h-6 w-6" />
-            </button>
-
-            {/* Navigation Links */}
-            <div className="mt-6">
-              {navigation.categories.map((category) => (
-                <Link
-                  key={category.name}
-                  to={category.href}
-                  className="block p-2 font-medium text-gray-900 hover:text-blue-600"
-                  id={category.name}
-                >
-                  {category.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Search Form */}
-            <div className="relative flex-1 max-w-3xl mx-auto" ref={searchRef}>
-              <form onSubmit={handleSearch} className="flex">
-               
-                {/* Search Input */}
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="w-full border-0 px-4 py-2.5 placeholder:text-gray-400 focus:ring-0"
-                    placeholder="Search products..."
-                  />
-                  {query && (
-                    <button
-                      type="button"
-                      onClick={() => setQuery("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Search Button */}
-                <button
-                  type="submit"
-                  className="flex items-center bg-indigo-600 px-6 text-white hover:bg-indigo-700 rounded-r-lg"
-                >
-                  <IoSearchSharp className="h-5 w-5" />
-                </button>
-              </form>
-
-              {/* Search Suggestions Dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  {suggestions.map((suggestion) => (
-                    <div
-                      key={suggestion._id}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="flex items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
-                    >
-                      <img
-                        src={suggestion.thumbnail}
-                        alt={suggestion.title}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                      <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900">{suggestion.title}</p>
-                        <p className="text-sm text-gray-500">${suggestion.price.current}</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div 
-                    className="px-4 py-2 bg-gray-50 text-center cursor-pointer hover:bg-gray-100"
-                    onClick={handleSearch}
-                  >
-                    See all results for "{query}"
-                  </div>
-                </div>
-              )}
-
-              {/* Quick Category Access */}
-              <div className="hidden lg:flex space-x-4 mt-2 text-sm text-gray-600">
-                {categories.slice(0, 5).map(category => (
-                  <button
-                    key={category._id}
-                    onClick={() => handleCategoryClick(category._id)}
-                    className="hover:text-indigo-600 hover:underline"
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Account / Profile / Logout */}
-            <div className="mt-4 space-y-2">
-              {isLoggedIn ? (
-                <>
-                  <Link
-                    to="/profile"
-                    onClick={handleProfileClick}
-                    className="flex items-center space-x-2 text-lg font-medium text-gray-700 hover:text-blue-600"
-                  >
-                    <UserCircleIcon className="h-6 w-6" />
-                    <span>Profile</span>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-lg font-medium text-gray-700 hover:text-red-600"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  className="block w-full text-lg font-medium text-gray-700 hover:text-blue-600"
-                >
-                  Account
-                </Link>
-              )}
-            </div>
-
-            {/* Cart Icon */}
-            <Link className="mt-4 flex items-center justify-between" to="/cart">
-              <span className="text-sm font-medium text-gray-700">
-                Cart ({cartItems?.length || 0})
-              </span>
-              <div className="relative">
-                <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
-                {cartItems?.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-600 flex items-center justify-center">
-                    <span className="text-xs font-medium text-white">
-                      {cartItems.length}
-                    </span>
-                  </span>
-                )}
-              </div>
+      {/* Mobile menu - Enhanced */}
+      <Dialog as="div" className="lg:hidden" open={open} onClose={setOpen}>
+        <div className="fixed inset-0 z-50" />
+        <Dialog.Panel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="-m-1.5 p-1.5" onClick={() => setOpen(false)}>
+              <span className="sr-only">Your Company</span>
+              <img src="/assets/logo.png" alt="Logo" width={120} />
             </Link>
-
-            {/* Add Orders section to mobile menu */}
-            {isLoggedIn && (
-              <div className="px-4 py-3 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <Link 
-                    to="/order-history"
-                    className="flex items-center space-x-2 text-gray-700"
+            <button
+              type="button"
+              className="-m-2.5 rounded-md p-2.5 text-gray-700"
+              onClick={() => setOpen(false)}
+            >
+              <span className="sr-only">Close menu</span>
+              <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+          
+          {/* User Info for Mobile */}
+          {isLoggedIn && (
+            <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+              <div className="flex items-center space-x-3">
+                <UserCircleIcon className="h-10 w-10 text-gray-400" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500">{user?.email}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Mobile Navigation Links */}
+          <div className="mt-6 flow-root">
+            <div className="-my-6 divide-y divide-gray-500/10">
+              <div className="space-y-2 py-6">
+                {navigation.categories.map((category) => (
+                  <Link
+                    key={category.name}
+                    to={category.href}
+                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
                     onClick={() => setOpen(false)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <span>| : ) Orders</span>
+                    {category.name}
                   </Link>
-                  {orders.length > 0 && (
-                    <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {orders.length}
-                    </span>
-                  )}
-                </div>
+                ))}
               </div>
-            )}
-          </Dialog.Panel>
-        </div>
+              
+              {/* Mobile Quick Actions */}
+              <div className="py-6 space-y-2">
+                {/* Wishlist for Mobile - Enhanced */}
+                {isLoggedIn && (
+                  <Link
+                    to="/wishlist"
+                    className="flex items-center justify-between -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    <div className="flex items-center">
+                      <HeartIcon className="h-6 w-6 text-red-500 mr-3 flex-shrink-0" />
+                      <span>Wishlist</span>
+                    </div>
+                    {wishlist?.length > 0 && (
+                      <span className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        {wishlist.length}
+                      </span>
+                    )}
+                  </Link>
+                )}
+                
+                {/* Cart for Mobile - Enhanced */}
+                {isLoggedIn && (
+                  <Link
+                    to="/cart"
+                    className="flex items-center justify-between -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    <div className="flex items-center">
+                      <ShoppingBagIcon className="h-6 w-6 text-indigo-500 mr-3 flex-shrink-0" />
+                      <span>Cart</span>
+                    </div>
+                    {cartItems?.length > 0 && (
+                      <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        {cartItems.length}
+                      </span>
+                    )}
+                  </Link>
+                )}
+                
+                {/* Orders for Mobile - Enhanced */}
+                {isLoggedIn && (
+                  <Link
+                    to="/order-history"
+                    className="flex items-center justify-between -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                    onClick={() => setOpen(false)}
+                  >
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      <span>Orders</span>
+                    </div>
+                    {orders.length > 0 && (
+                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        {orders.length}
+                      </span>
+                    )}
+                  </Link>
+                )}
+                
+                {/* Profile & Logout for Mobile */}
+                {isLoggedIn ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="flex items-center -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      onClick={() => setOpen(false)}
+                    >
+                      <UserCircleIcon className="h-6 w-6 text-gray-600 mr-3 flex-shrink-0" />
+                      <span>Profile</span>
+                    </Link>
+                    
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setOpen(false);
+                      }}
+                      className="flex w-full items-center -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-red-600 hover:bg-red-50"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      className="flex items-center -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      onClick={() => setOpen(false)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                      <span>Login</span>
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="flex items-center -mx-3 rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50"
+                      onClick={() => setOpen(false)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      </svg>
+                      <span>Register</span>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </Dialog.Panel>
       </Dialog>
 
       {/* Desktop navbar */}
@@ -321,6 +329,8 @@ export default function Navbar() {
                 {category.name}
               </Link>
             ))}
+
+            
           </div>
 
           {/* Desktop Search - Updated */}
@@ -484,6 +494,30 @@ export default function Navbar() {
                   )}
                 </Link>
               </div>
+            )}
+
+            {/* Desktop Wishlist - Enhanced */}
+            {isLoggedIn && (
+              <Link 
+                to="/wishlist" 
+                className="group flex items-center p-2 relative"
+                aria-label={`Wishlist with ${wishlist?.length || 0} items`}
+              >
+                <div className="relative inline-block">
+                  {wishlist?.length > 0 ? (
+                    <HeartSolid className="h-6 w-6 text-red-500 transition-transform duration-200 transform group-hover:scale-110" />
+                  ) : (
+                    <HeartIcon className="h-6 w-6 text-gray-600 group-hover:text-red-500 transition-colors duration-200" />
+                  )}
+                  {wishlist?.length > 0 && (
+                    <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-600 flex items-center justify-center transform transition-transform group-hover:scale-110">
+                      <span className="text-xs font-medium text-white">
+                        {wishlist.length}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </Link>
             )}
           </div>
         </div>

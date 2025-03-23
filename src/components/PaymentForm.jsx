@@ -98,39 +98,6 @@ const PaymentForm = () => {
     }
   };
 
-  const handleTestCheckout = async () => {
-    try {
-      setLoading(true);
-      
-      // Log the Stripe key (remove in production)
-      console.log("Stripe key available:", process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY ? "Yes" : "No");
-      
-      // Use the test checkout endpoint
-      const response = await payment.createTestCheckout();
-      
-      if (!response.data.success || !response.data.sessionId) {
-        throw new Error(response.data.message || 'Failed to create test checkout session');
-      }
-      
-      console.log("Test session created successfully:", response.data.sessionId);
-      
-      // Direct redirect to Stripe with the publishable key as a query parameter
-      const sessionId = response.data.sessionId;
-      const publishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-      
-      if (!publishableKey) {
-        throw new Error("Stripe publishable key is not available");
-      }
-      
-      // Redirect with the API key as a query parameter
-      window.location.href = `https://checkout.stripe.com/pay/${sessionId}?apiKey=${encodeURIComponent(publishableKey)}`;
-    } catch (err) {
-      console.error('Test checkout error:', err);
-      setError(err.message || 'Test checkout failed');
-      setLoading(false);
-    }
-  };
-
   if (!order) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -292,16 +259,7 @@ const PaymentForm = () => {
                   </button>
                 </div>
 
-                <div className="mt-4">
-                  <button
-                    type="button"
-                    onClick={handleTestCheckout}
-                    className="mt-4 w-full bg-green-600 py-2 px-4 text-white rounded hover:bg-green-700"
-                    disabled={loading}
-                  >
-                    {loading ? <ClipLoader color="#ffffff" size={20} /> : 'Test Checkout (Simple Product)'}
-                  </button>
-                </div>
+                
               </div>
             </div>
           </div>

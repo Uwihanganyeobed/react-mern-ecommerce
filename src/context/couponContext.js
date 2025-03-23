@@ -8,24 +8,46 @@ export const CouponProvider = ({ children }) => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [loading, setLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
+  const [error, setError] = useState(null);
+  const [activeCoupon, setActiveCoupon] = useState(null);
 
-  const validateCoupon = async (code) => {
+  const validateCoupon = async (code, cartTotal = 0, products = []) => {
     try {
       setLoading(true);
-      const response = await couponApi.validateCoupon(code);
+      setError(null);
+      
+      const response = await couponApi.validateCoupon({ 
+        code,
+        cartTotal,
+        products: products.map(p => ({ id: p.id || p._id, price: p.price, quantity: p.quantity }))
+      });
       
       if (response.data.valid) {
-        setAppliedCoupon(response.data.coupon);
-        setDiscount(response.data.discount);
+        const couponData = response.data.coupon;
+        const discountAmount = response.data.discount;
+        
+        setAppliedCoupon(couponData);
+        setActiveCoupon(couponData);
+        setDiscount(discountAmount);
+        
+        // Add calculated discount to the coupon object for display
+        const couponWithDiscount = {
+          ...couponData,
+          calculatedDiscount: discountAmount
+        };
+        
         toast.success('Coupon applied successfully!');
-        return response.data;
+        return couponWithDiscount;
       } else {
         setAppliedCoupon(null);
+        setActiveCoupon(null);
         setDiscount(0);
+        setError(response.data.message || 'Invalid coupon');
         toast.error(response.data.message || 'Invalid coupon');
         return null;
       }
     } catch (error) {
+      setError(error.response?.data?.message || 'Error validating coupon');
       toast.error(error.response?.data?.message || 'Error validating coupon');
       return null;
     } finally {
@@ -35,7 +57,9 @@ export const CouponProvider = ({ children }) => {
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
+    setActiveCoupon(null);
     setDiscount(0);
+    setError(null);
     toast.success('Coupon removed');
   };
 
@@ -52,8 +76,10 @@ export const CouponProvider = ({ children }) => {
   return (
     <CouponContext.Provider value={{
       appliedCoupon,
+      activeCoupon,
       loading,
       discount,
+      error,
       validateCoupon,
       removeCoupon,
       calculateDiscount
