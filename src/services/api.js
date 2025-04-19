@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const API_URL = 
-// process.env.REACT_APP_API_URL
- "http://localhost:5000";
+process.env.REACT_APP_API_URL
+//  "http://localhost:5000";
 
 // Ensure the API URL doesn't have a trailing slash
 const api = axios.create({
