@@ -16,35 +16,54 @@ export const SearchProvider = ({ children }) => {
   const searchProducts = useCallback(async (params) => {
     try {
       setLoading(true);
-      // Convert params to match backend expectations
+      
+      // Clean and validate parameters
       const searchParams = {
-        q: params.q || params.query,
-        category: params.category || '',
-        minPrice: params.minPrice || '',
-        maxPrice: params.maxPrice || '',
+        q: params.q?.trim() || '',
+        category: params.category?.trim() || '',
+        minPrice: params.minPrice ? Number(params.minPrice) : '',
+        maxPrice: params.maxPrice ? Number(params.maxPrice) : '',
         sortBy: params.sortBy || 'newest',
-        inStock: params.inStock || false,
-        onSale: params.onSale || false,
-        page: params.page || 1,
-        limit: params.limit || 10
+        inStock: Boolean(params.inStock),
+        onSale: Boolean(params.onSale),
+        page: Number(params.page) || 1,
+        limit: Number(params.limit) || 10
       };
 
-      const response = await productApi.searchProducts(searchParams);
-      console.log('Search API Response:', response); // Debug log
-
-      // Handle the response data structure
-      const products = response.data?.products || response.data || [];
-      setSearchResults(products);
-      setPagination({
-        currentPage: response.data.currentPage,
-        totalPages: response.data.totalPages,
-        totalItems: response.data.totalItems
+      // Remove empty parameters
+      Object.keys(searchParams).forEach(key => {
+        if (searchParams[key] === '' || searchParams[key] === null || searchParams[key] === undefined) {
+          delete searchParams[key];
+        }
       });
+
+      console.log('Search params:', searchParams); // Debug log
+
+      const response = await productApi.searchProducts(searchParams);
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      // Handle different response structures
+      const products = Array.isArray(response.data) 
+        ? response.data 
+        : response.data.products || [];
+
+      const paginationData = response.data.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: products.length
+      };
+
+      setSearchResults(products);
+      setPagination(paginationData);
       
       return products;
     } catch (error) {
       console.error('Search Error:', error);
-      toast.error('Error searching products');
+      const errorMessage = error.response?.data?.message || error.message || 'Error searching products';
+      toast.error(errorMessage);
       setSearchResults([]);
       return [];
     } finally {
@@ -55,31 +74,55 @@ export const SearchProvider = ({ children }) => {
   const filterProducts = useCallback(async (filters) => {
     try {
       setLoading(true);
-      let response;
-
-      // Combine search and filter parameters
+      
+      // Clean and validate filter parameters
       const params = {
-        q: filters.query || '',
-        category: filters.category || '',
-        minPrice: filters.minPrice || '',
-        maxPrice: filters.maxPrice || '',
+        q: filters.q?.trim() || filters.query?.trim() || '',
+        category: filters.category?.trim() || '',
+        minPrice: filters.minPrice ? Number(filters.minPrice) : '',
+        maxPrice: filters.maxPrice ? Number(filters.maxPrice) : '',
         sortBy: filters.sortBy || 'newest',
-        inStock: filters.inStock || false,
-        onSale: filters.onSale || false,
-        brand: filters.brand || '',
-        page: filters.page || 1,
-        limit: filters.limit || 10
+        inStock: Boolean(filters.inStock),
+        onSale: Boolean(filters.onSale),
+        brand: filters.brand?.trim() || '',
+        page: Number(filters.page) || 1,
+        limit: Number(filters.limit) || 10
       };
 
-      response = await productApi.searchProducts(params);
-      console.log('Filter API Response:', response); // Debug log
+      // Remove empty parameters
+      Object.keys(params).forEach(key => {
+        if (params[key] === '' || params[key] === null || params[key] === undefined) {
+          delete params[key];
+        }
+      });
 
-      const products = response.data?.products || response.data || [];
+      console.log('Filter params:', params); // Debug log
+
+      const response = await productApi.searchProducts(params);
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      // Handle different response structures
+      const products = Array.isArray(response.data) 
+        ? response.data 
+        : response.data.products || [];
+
+      const paginationData = response.data.pagination || {
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: products.length
+      };
+
       setSearchResults(products);
+      setPagination(paginationData);
+      
       return products;
     } catch (error) {
       console.error('Filter Error:', error);
-      toast.error('Error filtering products');
+      const errorMessage = error.response?.data?.message || error.message || 'Error filtering products';
+      toast.error(errorMessage);
       setSearchResults([]);
       return [];
     } finally {

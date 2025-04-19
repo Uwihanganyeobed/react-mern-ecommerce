@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = 
+// process.env.REACT_APP_API_URL
+ "http://localhost:5000";
 
 // Ensure the API URL doesn't have a trailing slash
 const api = axios.create({
@@ -207,19 +209,24 @@ const user = {
 
 // Product endpoints
 const product = {
-  /*----------------------------------------*/ 
   searchProducts: (params) => {
-    // Clean up params to remove empty values
+    // Clean up and validate params
     const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
       if (value !== '' && value !== null && value !== undefined) {
-        acc[key] = value;
+        // Convert numeric values
+        if (['page', 'limit', 'minPrice', 'maxPrice'].includes(key)) {
+          acc[key] = Number(value);
+        } else {
+          acc[key] = value;
+        }
       }
       return acc;
     }, {});
 
-    console.log('API Search Params:', cleanParams); // Debug log
+    console.log('API Search Params:', cleanParams);
     return api.get('/products/search', { params: cleanParams });
   },
+  
   /*featured*/ 
   getFeaturedProducts: () => api.get('/products/featured'),
   getFeaturedProduct: (id) => api.get(`/products/featured/${id}`),
@@ -238,24 +245,44 @@ const product = {
   getNewProduct: (id) => api.get(`/products/new/${id}`),
   getNewProducts: () => api.get('/products/new'),
 
-  sortProducts: (params) => api.get('/products/sort', { 
-    params: {
-      sortBy: params.sortBy,
-      category: params.category,
-      minPrice: params.minPrice,
-      maxPrice: params.maxPrice,
-      inStock: params.inStock
-    }
-  }),
-  filterProductsByPriceRange: (params) => {
+  sortProducts: (params) => {
+    // Clean up and validate sort params
     const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
       if (value !== '' && value !== null && value !== undefined) {
-        acc[key] = value;
+        // Convert numeric values
+        if (['page', 'limit', 'minPrice', 'maxPrice'].includes(key)) {
+          acc[key] = Number(value);
+        } else {
+          acc[key] = value;
+        }
       }
       return acc;
     }, {});
 
-    console.log('API Filter Params:', cleanParams); // Debug log
+    console.log('API Sort Params:', cleanParams);
+    return api.get('/products/sort', { params: cleanParams });
+  },
+
+  filterProductsByPriceRange: (params) => {
+    // Clean up and validate filter params
+    const cleanParams = Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        // Convert numeric values
+        if (['page', 'limit', 'minPrice', 'maxPrice'].includes(key)) {
+          acc[key] = Number(value);
+        } else {
+          acc[key] = value;
+        }
+      }
+      return acc;
+    }, {});
+
+    // Validate price range
+    if (cleanParams.minPrice && cleanParams.maxPrice && cleanParams.minPrice > cleanParams.maxPrice) {
+      return Promise.reject(new Error('Minimum price cannot be greater than maximum price'));
+    }
+
+    console.log('API Filter Params:', cleanParams);
     return api.get('/products/filter/price', { params: cleanParams });
   },
   

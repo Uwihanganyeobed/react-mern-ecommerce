@@ -37,6 +37,14 @@ module.exports = {
           '80%': { opacity: '1', transform: 'translate(-50%, -50%)' },
           '100%': { opacity: '0', transform: 'translate(-50%, -50%)' },
         },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideIn: {
+          '0%': { transform: 'translateX(50px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
       },
       animation: {
         'scale-up': 'scale-up 0.5s ease-out forwards',
@@ -50,6 +58,8 @@ module.exports = {
         'bounce-delay-2': 'bounce 1s infinite 0.2s',
         'bounce-delay-3': 'bounce 1s infinite 0.3s',
         fadeInOut: 'fadeInOut 3s ease-in-out forwards',
+        fadeIn: 'fadeIn 0.5s ease-in-out',
+        slideIn: 'slideIn 0.5s ease-out',
       }
     },
   },

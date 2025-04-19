@@ -7,8 +7,14 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   // Initialize state from localStorage to prevent flash of unauthenticated content
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (error) {
+      console.error('Error parsing user data from localStorage:', error);
+      localStorage.removeItem('user'); // Clean up invalid data
+      return null;
+    }
   });
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
