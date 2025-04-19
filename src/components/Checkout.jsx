@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { useCart } from "../context/cartContext";
 import { useAuth } from "../context/authContext";
 import { useOrders } from "../context/orderContext";
-import { countires } from "../utils/items";
 import { toast } from "react-hot-toast";
 import CountrySelector from './CountrySelector';
 import { useCoupon } from '../context/couponContext';
@@ -31,11 +30,7 @@ export default function Checkout() {
     country: "",
     state: "",
     postalCode: "",
-    phone: "",
-    paymentMethod: "card",
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvc: ""
+    phone: ""
   };
 
   const {
@@ -57,9 +52,6 @@ export default function Checkout() {
     }
   }, [errors]);
 
-  // The selected payment method
-  const paymentMethod = watch("paymentMethod");
-
   const onSubmit = async (data) => {
     try {
       setLoading(true);
@@ -76,12 +68,6 @@ export default function Checkout() {
           postalCode: data.postalCode,
           country: data.country
         },
-        paymentMethod: data.paymentMethod,
-        cardDetails: data.paymentMethod === 'card' ? {
-          number: data.cardNumber,
-          exp_month: parseInt(data.cardExpiry?.split('/')[0]),
-          exp_year: parseInt('20' + data.cardExpiry?.split('/')[1])
-        } : null,
         coupon: appliedCoupon ? appliedCoupon.code : null,
         discount: discount
       };
@@ -89,13 +75,9 @@ export default function Checkout() {
       const order = await createOrder(orderData);
       
       if (order) {
-        if (order.paymentMethod === 'card') {
-          navigate(`/order/${order._id}/payment`);
-        } else {
-          navigate(`/order/${order._id}`, { 
-            state: { isNewOrder: true }
-          });
-        }
+        navigate(`/order/${order._id}`, { 
+          state: { isNewOrder: true }
+        });
       }
     } catch (error) {
       toast.error(error.message);
@@ -103,12 +85,6 @@ export default function Checkout() {
       setLoading(false);
     }
   };
-
-  // Calculate totals
-  const total = cartTotal;
-  const shippingCost = 5.0;
-  const tax = total * 0.1;
-  const grandTotal = total + shippingCost + tax;
 
   // Redirect if not logged in or cart is empty
   if (!isLoggedIn) {
@@ -127,7 +103,7 @@ export default function Checkout() {
       <div className="container mx-auto p-6">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left side - Contact, Shipping, Delivery, Payment */}
+            {/* Left side - Contact, Shipping */}
             <div>
               {/* Contact Information */}
               <h2 className="text-lg font-semibold mb-4">
@@ -248,6 +224,7 @@ export default function Checkout() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
+                      State/Province
                     </label>
                     <input
                       type="text"
@@ -302,172 +279,11 @@ export default function Checkout() {
                   )}
                 </div>
               </div>
-
-              {/* Delivery Method */}
-              <h2 className="text-lg font-semibold mt-6 mb-4">
-                Delivery method
-              </h2>
-              <div className="bg-white p-6 rounded-lg shadow mb-4 flex flex-col sm:flex-row justify-between items-center">
-                <div className="flex flex-col justify-between items-center border-2 rounded-lg p-4 w-full sm:w-1/2 sm:mr-4 mb-4 sm:mb-0 cursor-pointer hover:border-indigo-600 transition duration-150">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="standard"
-                      {...register("deliveryMethod")}
-                      className="form-radio h-4 w-4 text-indigo-600"
-                      defaultChecked
-                    />
-                    <span className="ml-2 font-semibold">Standard</span>
-                  </label>
-                  <p className="text-gray-600 text-sm">4-10 business days</p>
-                  <p className="mt-2 font-bold text-lg">$5.00</p>
-                </div>
-
-                <div className="flex flex-col justify-between items-center border-2 rounded-lg p-4 w-full sm:w-1/2 cursor-pointer hover:border-indigo-600 transition duration-150">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="express"
-                      {...register("deliveryMethod")}
-                      className="form-radio h-4 w-4 text-indigo-600"
-                    />
-                    <span className="ml-2 font-semibold">Express</span>
-                  </label>
-                  <p className="text-gray-600 text-sm">2-5 business days</p>
-                  <p className="mt-2 font-bold text-lg">$16.00</p>
-                </div>
-              </div>
-
-              {/* Payment Method */}
-              <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
-              <div className="bg-white p-6 rounded-lg shadow mb-5">
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <input
-                      id="card"
-                      name="paymentMethod"
-                      type="radio"
-                      value="card"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                      {...register("paymentMethod")}
-                      defaultChecked
-                    />
-                    <label htmlFor="card" className="ml-3">
-                      <span className="block text-sm font-medium text-gray-700">Credit Card</span>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center">
-                    <input
-                      id="cash"
-                      name="paymentMethod"
-                      type="radio"
-                      value="cash"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                      {...register("paymentMethod")}
-                    />
-                    <label htmlFor="cash" className="ml-3">
-                      <span className="block text-sm font-medium text-gray-700">Cash on Delivery</span>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center">
-                    <input
-                      id="bank_transfer"
-                      name="paymentMethod"
-                      type="radio"
-                      value="bank_transfer"
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                      {...register("paymentMethod")}
-                    />
-                    <label htmlFor="bank_transfer" className="ml-3">
-                      <span className="block text-sm font-medium text-gray-700">Bank Transfer</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Conditional rendering based on selected payment method */}
-                {paymentMethod === "card" && (
-                  <div className="mt-6 space-y-4 border-t pt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Card Number
-                      </label>
-                      <input
-                        type="text"
-                        maxLength="16"
-                        placeholder="4242424242424242"
-                        className={`mt-1 block w-full px-3 py-2 border ${
-                          errors.cardNumber ? "border-red-500" : "border-gray-300"
-                        } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
-                        {...register("cardNumber")}
-                      />
-                      {errors.cardNumber && (
-                        <p className="text-red-500 text-sm">{errors.cardNumber.message}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Expiry Date
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="MM/YY"
-                          maxLength="5"
-                          className={`mt-1 block w-full px-3 py-2 border ${
-                            errors.cardExpiry ? "border-red-500" : "border-gray-300"
-                          } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
-                          {...register("cardExpiry")}
-                        />
-                        {errors.cardExpiry && (
-                          <p className="text-red-500 text-sm">{errors.cardExpiry.message}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          CVC
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="123"
-                          maxLength="3"
-                          className={`mt-1 block w-full px-3 py-2 border ${
-                            errors.cardCvc ? "border-red-500" : "border-gray-300"
-                          } rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500`}
-                          {...register("cardCvc")}
-                        />
-                        {errors.cardCvc && (
-                          <p className="text-red-500 text-sm">{errors.cardCvc.message}</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === "cash" && (
-                  <div className="mt-6 border-t p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
-                    <p className="text-center text-gray-700">
-                      Cash on Delivery payment will be processed after placing order
-                    </p>
-                  </div>
-                )}
-
-                {paymentMethod === "bank_transfer" && (
-                  <div className="mt-6 border-t p-3 bg-yellow-50 rounded-lg flex items-center justify-center">
-                    <p className="text-center text-gray-700">
-                      Bank Transfer payment will be processed after placing order
-                    </p>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Right side - Order Summary */}
             <div>
-              <h2 className="text-lg font-semibold mb-4 flex">Order summary</h2>
+              <h2 className="text-lg font-semibold mb-4">Order summary</h2>
               <div className="bg-white p-6 rounded-lg shadow">
                 <div className="mb-6">
                   <h3 className="font-semibold text-gray-700 mb-3">Items in cart</h3>
@@ -537,7 +353,7 @@ export default function Checkout() {
                   {loading ? (
                     <div className="flex justify-center items-center">
                       <ClipLoader size={24} color="#ffffff" />
-                      <span className="ml-2">Processing...</span>
+                      <span className="ml-2">Place Order</span>
                     </div>
                   ) : (
                     "Place Order"
