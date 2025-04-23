@@ -170,6 +170,104 @@ export default function Navbar() {
           {/* Mobile Navigation Links */}
           <div className="mt-6 flow-root">
             <div className="-my-6 divide-y divide-gray-500/10">
+              {/* Mobile Search */}
+              <div className="py-6">
+                <div className="relative" ref={searchRef}>
+                  <form onSubmit={handleSearch} className="flex w-full">
+                    {/* Search Input */}
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        className="w-full border border-gray-300 px-4 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Search products..."
+                      />
+                      {query && (
+                        <button
+                          type="button"
+                          onClick={() => setQuery("")}
+                          className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          <XMarkIcon className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Search Button */}
+                    <button
+                      type="submit"
+                      className="flex items-center bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    >
+                      <IoSearchSharp className="h-5 w-5" />
+                    </button>
+                  </form>
+
+                  {/* Search Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                      {suggestions.map((suggestion) => (
+                        <div
+                          key={suggestion._id}
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100"
+                        >
+                          <img
+                            src={suggestion.thumbnail || suggestion.images?.[0]}
+                            alt={suggestion.title}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                          <div className="ml-4 flex-1">
+                            <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                              {suggestion.title}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {suggestion.category}
+                            </p>
+                            <div className="flex items-center justify-between mt-1">
+                              <p className="text-sm font-medium text-indigo-600">
+                                ${suggestion.price?.current}
+                              </p>
+                              {suggestion.rating && (
+                                <div className="flex items-center">
+                                  <span className="text-yellow-400">★</span>
+                                  <span className="text-sm text-gray-600 ml-1">
+                                    {suggestion.rating.average} ({suggestion.rating.count})
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <div 
+                        className="px-4 py-3 bg-gray-50 text-center cursor-pointer hover:bg-gray-100 text-indigo-600 font-medium"
+                        onClick={handleSearch}
+                      >
+                        See all results for "{query}"
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quick Categories */}
+                  <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
+                    {categories.slice(0, 5).map(category => (
+                      <button
+                        key={category._id}
+                        onClick={() => {
+                          handleCategoryClick(category._id);
+                          setOpen(false);
+                        }}
+                        className="hover:text-indigo-600 hover:underline whitespace-nowrap"
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2 py-6">
                 {navigation.categories.map((category) => (
                   <Link
