@@ -29,7 +29,6 @@ const OrderDetails = () => {
         }
       } catch (error) {
         if (isMounted) {
-          toast.error('Failed to load order details');
           navigate('/order-history');
         }
       } finally {
