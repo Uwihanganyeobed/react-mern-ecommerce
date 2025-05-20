@@ -49,7 +49,7 @@ export const OrderProvider = ({ children }) => {
       return orderData;
     } catch (error) {
       console.error('Error fetching order:', error);
-      toast.error('Failed to load order details');
+      // toast.error('Failed to load order details');
       throw error;
     } finally {
       setLoading(false);
